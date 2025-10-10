@@ -29,5 +29,10 @@ namespace MultiRoomTimer.Commands
         {
             _execute(parameter);
         }
+
+        public void RaiseCanExecuteChanged()
+        {
+            CommandManager.InvalidateRequerySuggested();
+        }
     }
 }

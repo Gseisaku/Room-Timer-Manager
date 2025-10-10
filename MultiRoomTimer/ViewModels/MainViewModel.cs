@@ -5,33 +5,52 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using System;
+using System.Collections.Generic;
 
 namespace MultiRoomTimer.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
         public ObservableCollection<RoomViewModel> Rooms { get; }
-        public ICommand ExportCommand { get; }
+        public ICommand ExportAllCommand { get; }
 
         private readonly ExcelExportService _excelExportService;
 
         public MainViewModel()
         {
-            Rooms = new ObservableCollection<RoomViewModel>(
-                Enumerable.Range(1, 19)
-                          .Select(i => new RoomViewModel(new RoomSession(i)))
-            );
-
             _excelExportService = new ExcelExportService();
-            ExportCommand = new RelayCommand(ExportData);
+
+            Rooms = new ObservableCollection<RoomViewModel>();
+            for (int i = 1; i <= 19; i++)
+            {
+                var roomVM = new RoomViewModel(new RoomSession(i));
+                roomVM.SessionEnded += OnSessionEnded; // Subscribe to the event
+                Rooms.Add(roomVM);
+            }
+
+            ExportAllCommand = new RelayCommand(ExportAllData, CanExportAllData);
         }
 
-        private void ExportData(object? parameter)
+        private void OnSessionEnded(RoomSession endedSession)
         {
-            var sessions = Rooms.Select(vm => vm.GetSession());
-            var fileName = $"TimerReport_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-            _excelExportService.Export(sessions, fileName);
-            // In a real app, we'd show a confirmation message.
+            var fileName = $"TimerReport_{DateTime.Now:yyyyMMdd}.xlsx";
+            _excelExportService.AppendSession(endedSession, fileName);
+            // Optionally, show a success message to the user
+        }
+
+        private bool CanExportAllData(object? parameter)
+        {
+            return Rooms.Any(r => r.GetSession().Status != TimerStatus.Available);
+        }
+
+        private void ExportAllData(object? parameter)
+        {
+            var activeSessions = Rooms.Select(vm => vm.GetSession())
+                                      .Where(s => s.Status != TimerStatus.Available);
+
+            var fileName = $"TimerReport_All_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            _excelExportService.ExportAll(activeSessions, fileName);
+            // Optionally, show a success message to the user
         }
     }
 }

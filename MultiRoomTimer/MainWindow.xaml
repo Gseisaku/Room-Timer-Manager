@@ -5,12 +5,47 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MultiRoomTimer"
         xmlns:viewmodels="clr-namespace:MultiRoomTimer.ViewModels"
+        xmlns:converters="clr-namespace:MultiRoomTimer.Converters"
         mc:Ignorable="d"
-        Title="Multi-Room Timer Management" Height="800" Width="1200">
-    <Window.DataContext>
-        <viewmodels:MainViewModel/>
-    </Window.DataContext>
+        Title="マルチルームタイマー管理システム" Height="850" Width="1400">
+    <Window.Resources>
+        <converters:RadioButtonValueConverter x:Key="RadioButtonValueConverter"/>
+
+        <Style TargetType="RadioButton" x:Key="TabRadioButtonStyle">
+            <Setter Property="Padding" Value="5,3"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="MinWidth" Value="45"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border Name="border" BorderBrush="Gray" BorderThickness="1" CornerRadius="3" Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="DodgerBlue"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="LightGray"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
         <ItemsControl ItemsSource="{Binding Rooms}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -23,35 +58,53 @@
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
+                            <!-- Room Number and Timer Display -->
                             <TextBlock Grid.Row="0" Text="{Binding RoomNumber, StringFormat='Room {0}'}" FontWeight="Bold" FontSize="16" Margin="5" HorizontalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Text="{Binding DisplayTimeString}" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,5,0,10" />
 
-                            <StackPanel Grid.Row="1" Margin="5" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding RemainingTimeString}" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <StackPanel Orientation="Horizontal" Margin="5">
-                                    <TextBlock Text="Cast: "/>
-                                    <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="100"/>
+                            <!-- Inputs -->
+                            <StackPanel Grid.Row="2" Margin="5" VerticalAlignment="Top">
+                                <StackPanel Orientation="Horizontal" Margin="5,0">
+                                    <TextBlock Text="Cast: " VerticalAlignment="Center"/>
+                                    <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" IsEnabled="{Binding IsAvailable}"/>
                                 </StackPanel>
-                                <StackPanel Orientation="Horizontal" Margin="5">
-                                    <TextBlock Text="Course: "/>
-                                    <TextBox Text="{Binding CourseType, UpdateSourceTrigger=PropertyChanged}" MinWidth="100"/>
-                                </StackPanel>
+
+                                <TextBlock Text="Course (min):" Margin="5,5,5,0"/>
+                                <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
+                                    <RadioButton Content="45" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=45, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    <RadioButton Content="60" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=60, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    <RadioButton Content="70" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=70, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    <RadioButton Content="90" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=90, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    <RadioButton Content="120" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=120, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                </WrapPanel>
+
+                                <TextBlock Text="Type:" Margin="5,5,5,0"/>
+                                <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
+                                    <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    <RadioButton Content="H" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                </WrapPanel>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
-                                <Button Content="Start 60min" Command="{Binding StartCommand}" CommandParameter="60" Margin="2"/>
-                                <Button Content="Start 90min" Command="{Binding StartCommand}" CommandParameter="90" Margin="2"/>
-                                <Button Content="Stop" Command="{Binding StopCommand}" Margin="2"/>
-                            </StackPanel>
+                            <!-- Buttons -->
+                            <WrapPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="5">
+                                <Button Content="Start" Command="{Binding StartCommand}" Margin="2" Padding="8,3"/>
+                                <Button Content="{Binding PauseButtonContent}" Command="{Binding TogglePauseCommand}" Margin="2" Padding="8,3"/>
+                                <Button Content="+30" Command="{Binding AddTimeCommand}" Margin="2" Padding="8,3"/>
+                                <Button Content="End" Command="{Binding EndCommand}" Margin="2" Padding="8,3" Background="IndianRed" Foreground="White"/>
+                                <Button Content="Reset" Command="{Binding ResetCommand}" Margin="2" Padding="8,3"/>
+                            </WrapPanel>
                         </Grid>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <Button Grid.Row="1" Content="Export to Excel" Command="{Binding ExportCommand}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10"/>
+        <Button Grid.Row="1" Content="Export All Active" Command="{Binding ExportAllCommand}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Padding="10,5"/>
     </Grid>
 </Window>

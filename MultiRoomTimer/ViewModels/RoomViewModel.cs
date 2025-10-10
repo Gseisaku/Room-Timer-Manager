@@ -4,6 +4,7 @@ using System;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
+using System.Collections.Generic;
 
 namespace MultiRoomTimer.ViewModels
 {
@@ -11,124 +12,229 @@ namespace MultiRoomTimer.ViewModels
     {
         private readonly RoomSession _session;
         private readonly DispatcherTimer _timer;
-        private TimeSpan _remainingTime;
+        private TimeSpan _displayTime;
         private Brush _statusBrush = Brushes.LightGray;
+        private string _pauseButtonContent = "一時停止";
 
+        // --- Commands ---
+        public RelayCommand StartCommand { get; }
+        public RelayCommand TogglePauseCommand { get; }
+        public RelayCommand EndCommand { get; }
+        public RelayCommand ResetCommand { get; }
+        public RelayCommand AddTimeCommand { get; }
+
+        public event Action<RoomSession>? SessionEnded;
+
+        // --- Properties for UI Binding ---
         public int RoomNumber => _session.RoomNumber;
-
-        public ICommand StartCommand { get; }
-        public ICommand StopCommand { get; }
 
         public string CastName
         {
             get => _session.CastName ?? "";
+            set { if (_session.CastName != value) { _session.CastName = value; OnPropertyChanged(); } }
+        }
+
+        public List<int> CourseOptions { get; } = new List<int> { 45, 60, 70, 90, 120 };
+        public int SelectedCourse
+        {
+            get => _session.CourseMinutes;
             set
             {
-                if (_session.CastName != value)
+                if (_session.CourseMinutes != value)
                 {
-                    _session.CastName = value;
+                    _session.CourseMinutes = value;
                     OnPropertyChanged();
+                    StartCommand.RaiseCanExecuteChanged();
                 }
             }
         }
 
-        public string CourseType
+        public List<SessionType> TypeOptions { get; } = new List<SessionType> { SessionType.F, SessionType.H, SessionType.N };
+        public SessionType? SelectedType
         {
-            get => _session.CourseType ?? "";
+            get => _session.Type;
             set
             {
-                if (_session.CourseType != value)
+                if (_session.Type != value)
                 {
-                    _session.CourseType = value;
+                    _session.Type = value;
                     OnPropertyChanged();
+                    StartCommand.RaiseCanExecuteChanged();
                 }
             }
         }
 
-        public TimeSpan RemainingTime
+        public TimeSpan DisplayTime
         {
-            get => _remainingTime;
-            set
-            {
-                _remainingTime = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(RemainingTimeString));
-            }
+            get => _displayTime;
+            set { _displayTime = value; OnPropertyChanged(nameof(DisplayTimeString)); }
         }
 
-        public string RemainingTimeString => $"{(int)RemainingTime.TotalMinutes:00}:{RemainingTime.Seconds:00}";
+        public string DisplayTimeString =>
+            _session.Status == TimerStatus.Finished
+            ? $"+{(int)_displayTime.TotalMinutes:00}:{_displayTime.Seconds:00}"
+            : $"{(int)_displayTime.TotalMinutes:00}:{_displayTime.Seconds:00}";
 
         public Brush StatusBrush
         {
             get => _statusBrush;
-            set
-            {
-                _statusBrush = value;
-                OnPropertyChanged();
-            }
+            set { _statusBrush = value; OnPropertyChanged(); }
         }
 
+        public string PauseButtonContent
+        {
+            get => _pauseButtonContent;
+            set { _pauseButtonContent = value; OnPropertyChanged(); }
+        }
+
+        public bool IsAvailable => _session.Status == TimerStatus.Available;
+
+        // --- Constructor ---
         public RoomViewModel(RoomSession session)
         {
             _session = session;
             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _timer.Tick += Timer_Tick;
 
-            StartCommand = new RelayCommand(ExecuteStartTimer, CanStartTimer);
-            StopCommand = new RelayCommand(ExecuteStopTimer, CanStopTimer);
+            StartCommand = new RelayCommand(ExecuteStart, CanStart);
+            TogglePauseCommand = new RelayCommand(ExecuteTogglePause, CanTogglePause);
+            EndCommand = new RelayCommand(ExecuteEnd, CanEnd);
+            ResetCommand = new RelayCommand(ExecuteReset, CanReset);
+            AddTimeCommand = new RelayCommand(ExecuteAddTime, CanAddTime);
+
+            UpdateStatus();
         }
 
-        private bool CanStartTimer(object? parameter) => _session.Status == TimerStatus.Available;
-        private bool CanStopTimer(object? parameter) => _session.Status != TimerStatus.Available;
+        // --- Command Logic ---
 
-        private void ExecuteStartTimer(object? parameter)
+        private bool CanStart(object? p) => _session.Status == TimerStatus.Available && _session.CourseMinutes > 0 && _session.Type.HasValue;
+        private void ExecuteStart(object? p)
         {
-            if (int.TryParse(parameter?.ToString(), out int durationMinutes))
+            _session.Status = TimerStatus.Running;
+            _session.StartTime = DateTime.Now;
+            _session.EndTime = _session.StartTime.Value.AddMinutes(_session.CourseMinutes);
+            _timer.Start();
+            UpdateStatus();
+        }
+
+        private bool CanTogglePause(object? p) => _session.Status == TimerStatus.Running || _session.Status == TimerStatus.Warning || _session.Status == TimerStatus.Paused;
+        private void ExecuteTogglePause(object? p)
+        {
+            if (_session.Status == TimerStatus.Paused) // Resume
             {
-                _session.StartTime = DateTime.Now;
-                _session.EndTime = _session.StartTime.Value.AddMinutes(durationMinutes);
-                _session.Status = TimerStatus.InUse;
-                UpdateStatusBrush();
+                _session.Status = TimerStatus.Running;
+                _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
+                _session.RemainingTimeOnPause = TimeSpan.Zero;
                 _timer.Start();
+            }
+            else // Pause
+            {
+                _timer.Stop();
+                _session.Status = TimerStatus.Paused;
+                if (_session.EndTime.HasValue)
+                {
+                    _session.RemainingTimeOnPause = _session.EndTime.Value - DateTime.Now;
+                    if (_session.RemainingTimeOnPause.TotalSeconds < 0)
+                    {
+                        _session.RemainingTimeOnPause = TimeSpan.Zero;
+                    }
+                    DisplayTime = _session.RemainingTimeOnPause;
+                }
+            }
+            UpdateStatus();
+        }
+
+        private bool CanEnd(object? p) => _session.Status != TimerStatus.Available;
+        private void ExecuteEnd(object? p)
+        {
+            _timer.Stop();
+            if (_session.Status != TimerStatus.Finished)
+            {
+                 _session.EndTime = DateTime.Now;
+            }
+
+            var sessionSnapshot = new RoomSession(_session.RoomNumber) {
+                CastName = _session.CastName,
+                CourseMinutes = _session.CourseMinutes,
+                Type = _session.Type,
+                StartTime = _session.StartTime,
+                EndTime = _session.EndTime,
+                Overtime = _session.Overtime
+            };
+            SessionEnded?.Invoke(sessionSnapshot);
+
+            _session.Reset();
+            DisplayTime = TimeSpan.Zero;
+            UpdateStatus();
+        }
+
+        private bool CanReset(object? p) => _session.Status != TimerStatus.Available;
+        private void ExecuteReset(object? p)
+        {
+            _timer.Stop();
+            _session.Reset();
+            DisplayTime = TimeSpan.Zero;
+            UpdateStatus();
+        }
+
+        private bool CanAddTime(object? p) => _session.Status == TimerStatus.Paused;
+        private void ExecuteAddTime(object? p)
+        {
+            if (_session.RemainingTimeOnPause.TotalSeconds > 0)
+            {
+                _session.RemainingTimeOnPause = _session.RemainingTimeOnPause.Add(TimeSpan.FromMinutes(30));
+                DisplayTime = _session.RemainingTimeOnPause;
             }
         }
 
-        private void ExecuteStopTimer(object? parameter)
-        {
-            _session.Status = TimerStatus.Available;
-            _session.CastName = null;
-            _session.CourseType = null;
-            _session.StartTime = null;
-            _session.EndTime = null;
-            RemainingTime = TimeSpan.Zero;
-            UpdateStatusBrush();
-            OnPropertyChanged(nameof(CastName));
-            OnPropertyChanged(nameof(CourseType));
-            _timer.Stop();
-        }
-
+        // --- Timer Logic ---
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            if (_session.EndTime.HasValue)
+            if (_session.EndTime.HasValue && _session.Status != TimerStatus.Paused)
             {
                 var now = DateTime.Now;
                 if (now < _session.EndTime.Value)
                 {
-                    RemainingTime = _session.EndTime.Value - now;
-                    if (RemainingTime.TotalMinutes < 10 && _session.Status != TimerStatus.Warning)
+                    DisplayTime = _session.EndTime.Value - now;
+                    var newStatus = (DisplayTime.TotalMinutes < 10) ? TimerStatus.Warning : TimerStatus.Running;
+                    if (newStatus != _session.Status)
                     {
-                        _session.Status = TimerStatus.Warning;
+                        _session.Status = newStatus;
                         UpdateStatusBrush();
                     }
                 }
                 else
                 {
-                    RemainingTime = TimeSpan.Zero;
-                    _session.Overtime = now - _session.EndTime.Value;
-                    _session.Status = TimerStatus.Finished;
-                    UpdateStatusBrush();
-                    _timer.Stop();
+                    DisplayTime = now - _session.EndTime.Value;
+                    _session.Overtime = DisplayTime;
+                    if (_session.Status != TimerStatus.Finished)
+                    {
+                         _session.Status = TimerStatus.Finished;
+                         UpdateStatusBrush();
+                    }
                 }
+            }
+        }
+
+        private void UpdateStatus()
+        {
+            UpdateStatusBrush();
+            PauseButtonContent = _session.Status == TimerStatus.Paused ? "再開" : "一時停止";
+
+            OnPropertyChanged(nameof(IsAvailable));
+
+            StartCommand.RaiseCanExecuteChanged();
+            TogglePauseCommand.RaiseCanExecuteChanged();
+            EndCommand.RaiseCanExecuteChanged();
+            ResetCommand.RaiseCanExecuteChanged();
+            AddTimeCommand.RaiseCanExecuteChanged();
+
+            if (_session.Status == TimerStatus.Available)
+            {
+                DisplayTime = TimeSpan.Zero;
+                OnPropertyChanged(nameof(CastName));
+                OnPropertyChanged(nameof(SelectedCourse));
+                OnPropertyChanged(nameof(SelectedType));
             }
         }
 
@@ -137,13 +243,15 @@ namespace MultiRoomTimer.ViewModels
             StatusBrush = _session.Status switch
             {
                 TimerStatus.Available => Brushes.LightGray,
-                TimerStatus.InUse => Brushes.LightGreen,
+                TimerStatus.Running => Brushes.LightGreen,
                 TimerStatus.Warning => Brushes.Yellow,
+                TimerStatus.Paused => Brushes.LightBlue,
                 TimerStatus.Finished => Brushes.Salmon,
                 _ => Brushes.LightGray,
             };
         }
 
+        // This is needed for the "Export All" feature
         public RoomSession GetSession() => _session;
     }
 }

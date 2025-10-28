@@ -3,7 +3,6 @@ using MultiRoomTimer.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace MultiRoomTimer.Services
 {
@@ -11,8 +10,36 @@ namespace MultiRoomTimer.Services
     {
         private readonly string[] _headers = {
             "Room Number", "Cast Name", "Course (min)", "Type",
-            "Start Time", "End Time", "Overtime"
+            "Start Time", "End Time", "Overtime", "Remarks"
         };
+
+        public void GenerateYearlyReport(Dictionary<string, List<RoomSession>> yearlySessions, int year)
+        {
+            var reportsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Reports");
+            Directory.CreateDirectory(reportsPath);
+            var filePath = Path.Combine(reportsPath, $"TimerReport_{year}.xlsx");
+
+            using (var workbook = new XLWorkbook())
+            {
+                foreach (var date in yearlySessions.Keys)
+                {
+                    var worksheet = workbook.Worksheets.Add(date);
+                    SetHeaders(worksheet);
+
+                    int row = 2;
+                    foreach (var session in yearlySessions[date])
+                    {
+                        WriteSessionRow(worksheet, row++, session);
+                    }
+                    worksheet.Columns().AdjustToContents();
+                }
+
+                if (workbook.Worksheets.Count > 0)
+                {
+                    workbook.SaveAs(filePath);
+                }
+            }
+        }
 
         private void SetHeaders(IXLWorksheet worksheet)
         {
@@ -29,58 +56,10 @@ namespace MultiRoomTimer.Services
             worksheet.Cell(row, 2).Value = session.CastName;
             worksheet.Cell(row, 3).Value = session.CourseMinutes;
             worksheet.Cell(row, 4).Value = session.Type?.ToString();
-            worksheet.Cell(row, 5).Value = session.StartTime?.ToString("yyyy-MM-dd HH:mm:ss");
-            worksheet.Cell(row, 6).Value = session.EndTime?.ToString("yyyy-MM-dd HH:mm:ss");
-            worksheet.Cell(row, 7).Value = session.Overtime.TotalMinutes > 0 ? session.Overtime.ToString(@"hh\:mm\:ss") : "";
-        }
-
-        /// <summary>
-        /// Exports all currently active sessions to a new file.
-        /// </summary>
-        public void ExportAll(IEnumerable<RoomSession> sessions, string filePath)
-        {
-            using (var workbook = new XLWorkbook())
-            {
-                var worksheet = workbook.Worksheets.Add("Active Sessions");
-                SetHeaders(worksheet);
-
-                int row = 2;
-                foreach (var session in sessions)
-                {
-                    WriteSessionRow(worksheet, row++, session);
-                }
-
-                worksheet.Columns().AdjustToContents();
-                workbook.SaveAs(filePath);
-            }
-        }
-
-        /// <summary>
-        /// Appends a single completed session to a daily report file.
-        /// Creates the file and adds headers if it doesn't exist.
-        /// </summary>
-        public void AppendSession(RoomSession session, string filePath)
-        {
-            XLWorkbook workbook;
-            IXLWorksheet worksheet;
-
-            if (File.Exists(filePath))
-            {
-                workbook = new XLWorkbook(filePath);
-                worksheet = workbook.Worksheet(1);
-            }
-            else
-            {
-                workbook = new XLWorkbook();
-                worksheet = workbook.Worksheets.Add("Daily Report");
-                SetHeaders(worksheet);
-            }
-
-            int lastRow = worksheet.LastRowUsed()?.RowNumber() ?? 1;
-            WriteSessionRow(worksheet, lastRow + 1, session);
-
-            worksheet.Columns().AdjustToContents();
-            workbook.SaveAs(filePath);
+            worksheet.Cell(row, 5).Value = session.StartTime?.ToString("HH:mm:ss");
+            worksheet.Cell(row, 6).Value = session.EndTime?.ToString("HH:mm:ss");
+            worksheet.Cell(row, 7).Value = session.Overtime.TotalSeconds > 0 ? session.Overtime.ToString(@"hh\:mm\:ss") : "";
+            worksheet.Cell(row, 8).Value = "";
         }
     }
 }

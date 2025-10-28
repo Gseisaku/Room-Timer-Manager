@@ -17,27 +17,34 @@ namespace MultiRoomTimer.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is bool isChecked && isChecked)
+            if (value is bool isChecked && isChecked && parameter != null)
             {
-                // If the button is checked, return its parameter as the new value
-                if (parameter != null)
+                var paramString = parameter.ToString();
+                var underlyingType = Nullable.GetUnderlyingType(targetType);
+
+                try
                 {
-                    // Try to convert parameter to the target type (e.g., int or enum)
-                    try
+                    if (underlyingType != null && underlyingType.IsEnum)
                     {
-                        if (targetType.IsEnum)
-                        {
-                            return Enum.Parse(targetType, parameter.ToString());
-                        }
+                        // Handle Nullable<Enum>
+                        return Enum.Parse(underlyingType, paramString);
+                    }
+                    else if (targetType.IsEnum)
+                    {
+                        // Handle regular Enum
+                        return Enum.Parse(targetType, paramString);
+                    }
+                    else
+                    {
+                        // Handle other types like int
                         return System.Convert.ChangeType(parameter, targetType);
                     }
-                    catch
-                    {
-                        return null;
-                    }
+                }
+                catch
+                {
+                    return Binding.DoNothing;
                 }
             }
-            // If not checked, do nothing
             return Binding.DoNothing;
         }
     }

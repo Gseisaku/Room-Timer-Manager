@@ -10,14 +10,9 @@ namespace MultiRoomTimer.Services
     {
         private readonly string[] _headers = {
             "Room Number", "Cast Name", "Course (min)", "Type",
-            "Start Time", "End Time", "Overtime", "Remarks" // "Remarks" header added
+            "Start Time", "End Time", "Overtime", "Remarks"
         };
 
-        /// <summary>
-        /// Generates a yearly report from session data.
-        /// </summary>
-        /// <param name="yearlySessions">A dictionary with date strings as keys and session lists as values.</param>
-        /// <param name="year">The year for the report.</param>
         public void GenerateYearlyReport(Dictionary<string, List<RoomSession>> yearlySessions, int year)
         {
             var reportsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Reports");
@@ -26,7 +21,6 @@ namespace MultiRoomTimer.Services
 
             using (var workbook = new XLWorkbook())
             {
-                // Sort sheets by date
                 foreach (var date in yearlySessions.Keys)
                 {
                     var worksheet = workbook.Worksheets.Add(date);
@@ -62,11 +56,9 @@ namespace MultiRoomTimer.Services
             worksheet.Cell(row, 2).Value = session.CastName;
             worksheet.Cell(row, 3).Value = session.CourseMinutes;
             worksheet.Cell(row, 4).Value = session.Type?.ToString();
-            // Format time to 24-hour format as requested
             worksheet.Cell(row, 5).Value = session.StartTime?.ToString("HH:mm:ss");
             worksheet.Cell(row, 6).Value = session.EndTime?.ToString("HH:mm:ss");
             worksheet.Cell(row, 7).Value = session.Overtime.TotalSeconds > 0 ? session.Overtime.ToString(@"hh\:mm\:ss") : "";
-            // Remarks column is left empty
             worksheet.Cell(row, 8).Value = "";
         }
     }

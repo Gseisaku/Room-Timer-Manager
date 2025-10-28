@@ -14,7 +14,7 @@ namespace MultiRoomTimer.ViewModels
     {
         public ObservableCollection<RoomViewModel> Rooms { get; }
         public ICommand GenerateReportCommand { get; }
-        public string AppVersion => "Ver.3.1";
+        public string AppVersion => "Ver.3.0";
 
         private readonly JsonDataStorageService _jsonDataStorageService;
         private readonly ExcelExportService _excelExportService;
@@ -33,7 +33,6 @@ namespace MultiRoomTimer.ViewModels
             }
 
             GenerateReportCommand = new RelayCommand(GenerateReport, CanGenerateReport);
-            // Periodically check if the button should be enabled.
             var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
             timer.Tick += (s, e) => (GenerateReportCommand as RelayCommand)?.RaiseCanExecuteChanged();
             timer.Start();

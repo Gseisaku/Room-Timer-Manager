@@ -34,6 +34,7 @@ namespace MultiRoomTimer.Models
         public DateTime? EndTime { get; set; }
         public TimeSpan Overtime { get; set; }
         public TimeSpan RemainingTimeOnPause { get; set; }
+        public bool WasFinishedWhenPaused { get; set; }
         public TimerStatus Status { get; set; }
 
         public RoomSession(int roomNumber)
@@ -52,6 +53,7 @@ namespace MultiRoomTimer.Models
             EndTime = null;
             Overtime = TimeSpan.Zero;
             RemainingTimeOnPause = TimeSpan.Zero;
+            WasFinishedWhenPaused = false;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
 using System.Collections.Generic;
+using System.Windows;
 
 namespace MultiRoomTimer.ViewModels
 {
@@ -14,7 +15,8 @@ namespace MultiRoomTimer.ViewModels
         private readonly DispatcherTimer _timer;
         private TimeSpan _displayTime;
         private Brush _statusBrush = Brushes.LightGray;
-        private string _pauseButtonContent = "一時停止";
+        private string _pauseButtonContent = "Stop";
+        private string _estimatedEndTimeString = "";
 
         // --- Commands ---
         public RelayCommand StartCommand { get; }
@@ -31,7 +33,15 @@ namespace MultiRoomTimer.ViewModels
         public string CastName
         {
             get => _session.CastName ?? "";
-            set { if (_session.CastName != value) { _session.CastName = value; OnPropertyChanged(); } }
+            set
+            {
+                if (_session.CastName != value)
+                {
+                    _session.CastName = value;
+                    OnPropertyChanged();
+                    StartCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public List<int> CourseOptions { get; } = new List<int> { 45, 60, 70, 90, 120 };
@@ -89,6 +99,12 @@ namespace MultiRoomTimer.ViewModels
 
         public bool IsAvailable => _session.Status == TimerStatus.Available;
 
+        public string EstimatedEndTimeString
+        {
+            get => _estimatedEndTimeString;
+            set { _estimatedEndTimeString = value; OnPropertyChanged(); }
+        }
+
         // --- Constructor ---
         public RoomViewModel(RoomSession session)
         {
@@ -107,44 +123,62 @@ namespace MultiRoomTimer.ViewModels
 
         // --- Command Logic ---
 
-        private bool CanStart(object? p) => _session.Status == TimerStatus.Available && _session.CourseMinutes > 0 && _session.Type.HasValue;
+        private bool CanStart(object? p) => !string.IsNullOrEmpty(CastName) && _session.Status == TimerStatus.Available && _session.CourseMinutes > 0 && _session.Type.HasValue;
         private void ExecuteStart(object? p)
         {
             _session.Status = TimerStatus.Running;
             _session.StartTime = DateTime.Now;
             _session.EndTime = _session.StartTime.Value.AddMinutes(_session.CourseMinutes);
+            EstimatedEndTimeString = $"終了予定: {_session.EndTime:HH:mm}";
             _timer.Start();
             UpdateStatus();
         }
 
-        private bool CanTogglePause(object? p) => _session.Status == TimerStatus.Running || _session.Status == TimerStatus.Warning || _session.Status == TimerStatus.Paused;
+        private bool CanTogglePause(object? p) => _session.Status == TimerStatus.Running || _session.Status == TimerStatus.Warning || _session.Status == TimerStatus.Paused || _session.Status == TimerStatus.Finished;
         private void ExecuteTogglePause(object? p)
         {
             if (_session.Status == TimerStatus.Paused) // Resume
             {
-                _session.Status = TimerStatus.Running;
-                _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
+                if (_session.WasFinishedWhenPaused)
+                {
+                    _session.Status = TimerStatus.Finished;
+                    // Recalculate EndTime to continue overtime count correctly
+                    _session.EndTime = DateTime.Now.Subtract(_session.Overtime);
+                    _session.WasFinishedWhenPaused = false;
+                }
+                else
+                {
+                    _session.Status = TimerStatus.Running;
+                    _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
+                }
                 _session.RemainingTimeOnPause = TimeSpan.Zero;
                 _timer.Start();
             }
-            else // Pause
+            else // Stop
             {
                 _timer.Stop();
+                _session.WasFinishedWhenPaused = (_session.Status == TimerStatus.Finished);
                 _session.Status = TimerStatus.Paused;
+
                 if (_session.EndTime.HasValue)
                 {
-                    _session.RemainingTimeOnPause = _session.EndTime.Value - DateTime.Now;
-                    if (_session.RemainingTimeOnPause.TotalSeconds < 0)
+                    var now = DateTime.Now;
+                    if (now < _session.EndTime.Value) // Timer was running
                     {
-                        _session.RemainingTimeOnPause = TimeSpan.Zero;
+                        _session.RemainingTimeOnPause = _session.EndTime.Value - now;
+                        DisplayTime = _session.RemainingTimeOnPause;
                     }
-                    DisplayTime = _session.RemainingTimeOnPause;
+                    else // Timer was finished (overtime)
+                    {
+                        _session.Overtime = now - _session.EndTime.Value;
+                        DisplayTime = _session.Overtime;
+                    }
                 }
             }
             UpdateStatus();
         }
 
-        private bool CanEnd(object? p) => _session.Status != TimerStatus.Available;
+        private bool CanEnd(object? p) => _session.Status == TimerStatus.Paused;
         private void ExecuteEnd(object? p)
         {
             _timer.Stop();
@@ -165,15 +199,26 @@ namespace MultiRoomTimer.ViewModels
 
             _session.Reset();
             DisplayTime = TimeSpan.Zero;
+            EstimatedEndTimeString = "";
             UpdateStatus();
         }
 
         private bool CanReset(object? p) => _session.Status != TimerStatus.Available;
         private void ExecuteReset(object? p)
         {
+            if (_session.Status == TimerStatus.Paused)
+            {
+                var result = MessageBox.Show("タイマーが一時停止中です。本当にリセットしますか？", "確認", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+            }
+
             _timer.Stop();
             _session.Reset();
             DisplayTime = TimeSpan.Zero;
+            EstimatedEndTimeString = "";
             UpdateStatus();
         }
 
@@ -182,8 +227,20 @@ namespace MultiRoomTimer.ViewModels
         {
             if (_session.RemainingTimeOnPause.TotalSeconds > 0)
             {
-                _session.RemainingTimeOnPause = _session.RemainingTimeOnPause.Add(TimeSpan.FromMinutes(30));
+                var addedTime = TimeSpan.FromMinutes(30);
+
+                // Add 30 minutes to the remaining time
+                _session.RemainingTimeOnPause = _session.RemainingTimeOnPause.Add(addedTime);
                 DisplayTime = _session.RemainingTimeOnPause;
+
+                // Also update the official end time
+                if (_session.EndTime.HasValue)
+                {
+                    _session.EndTime = _session.EndTime.Value.Add(addedTime);
+                }
+
+                // And the total course duration for reporting
+                _session.CourseMinutes += 30;
             }
         }
 
@@ -219,7 +276,7 @@ namespace MultiRoomTimer.ViewModels
         private void UpdateStatus()
         {
             UpdateStatusBrush();
-            PauseButtonContent = _session.Status == TimerStatus.Paused ? "再開" : "一時停止";
+            PauseButtonContent = _session.Status == TimerStatus.Paused ? "Resume" : "Stop";
 
             OnPropertyChanged(nameof(IsAvailable));
 

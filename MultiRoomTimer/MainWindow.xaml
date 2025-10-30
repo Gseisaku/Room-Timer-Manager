@@ -71,28 +71,40 @@
                             </StackPanel>
 
                             <!-- Inputs -->
-                            <StackPanel Grid.Row="2" Margin="5" VerticalAlignment="Top">
-                                <StackPanel Orientation="Horizontal" Margin="5,0">
-                                    <TextBlock Text="Cast: " VerticalAlignment="Center"/>
-                                    <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" IsEnabled="{Binding IsAvailable}"/>
+                            <Grid Grid.Row="2" Margin="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0">
+                                    <StackPanel Orientation="Horizontal" Margin="5,0">
+                                        <TextBlock Text="Cast: " VerticalAlignment="Center"/>
+                                        <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" IsEnabled="{Binding IsAvailable}"/>
+                                    </StackPanel>
                                 </StackPanel>
 
-                                <TextBlock Text="Course (min):" Margin="5,5,5,0"/>
-                                <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
-                                    <RadioButton Content="45" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=45, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                    <RadioButton Content="60" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=60, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                    <RadioButton Content="70" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=70, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                    <RadioButton Content="90" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=90, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                    <RadioButton Content="120" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=120, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                </WrapPanel>
+                                <StackPanel Grid.Row="1">
+                                    <TextBlock Text="Course (min):" Margin="5,5,5,0"/>
+                                    <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
+                                        <RadioButton Content="45" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=45, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <RadioButton Content="60" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=60, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <RadioButton Content="70" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=70, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <RadioButton Content="90" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=90, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <RadioButton Content="120" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=120, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    </WrapPanel>
+                                </StackPanel>
 
-                                <TextBlock Text="Type:" Margin="5,5,5,0"/>
-                                <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
-                                    <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                    <RadioButton Content="H" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                    <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                </WrapPanel>
-                            </StackPanel>
+                                <StackPanel Grid.Row="2">
+                                    <TextBlock Text="Type:" Margin="5,5,5,0"/>
+                                    <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
+                                        <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <RadioButton Content="H" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Grid>
 
                             <!-- Buttons -->
                             <WrapPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="5">

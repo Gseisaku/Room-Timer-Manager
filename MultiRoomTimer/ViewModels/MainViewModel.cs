@@ -14,7 +14,7 @@ namespace MultiRoomTimer.ViewModels
     {
         public ObservableCollection<RoomViewModel> Rooms { get; }
         public ICommand GenerateReportCommand { get; }
-        public string AppVersion => "Ver.3.1";
+        public string AppVersion => "Ver.3.1.2";
 
         private readonly JsonDataStorageService _jsonDataStorageService;
         private readonly ExcelExportService _excelExportService;

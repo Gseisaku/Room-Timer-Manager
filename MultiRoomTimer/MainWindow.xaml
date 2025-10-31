@@ -66,8 +66,8 @@
                             <!-- Room Number and Timer Display -->
                             <TextBlock Grid.Row="0" Text="{Binding RoomNumber, StringFormat='Room {0}'}" FontWeight="Bold" FontSize="16" Margin="5" HorizontalAlignment="Center"/>
                             <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,5,0,10">
-                                <TextBlock Text="{Binding DisplayTimeString}" FontSize="32" FontWeight="Bold" HorizontalAlignment="Center" />
-                                <TextBlock Text="{Binding EstimatedEndTimeString}" FontSize="14" Foreground="DarkSlateGray" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                <TextBlock Text="{Binding DisplayTimeString}" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding EstimatedEndTimeString}" FontSize="12" Foreground="DarkSlateGray" HorizontalAlignment="Center" Margin="0,2,0,0" />
                             </StackPanel>
 
                             <!-- Inputs -->

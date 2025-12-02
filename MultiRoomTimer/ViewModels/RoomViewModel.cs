@@ -83,6 +83,8 @@ namespace MultiRoomTimer.ViewModels
             ? $"+{(int)_displayTime.TotalMinutes:00}:{_displayTime.Seconds:00}"
             : $"{(int)_displayTime.TotalMinutes:00}:{_displayTime.Seconds:00}";
 
+        public string EndTimeString => _session.EndTime.HasValue && _session.Status != TimerStatus.Available && _session.Status != TimerStatus.Finished ? _session.EndTime.Value.ToString("HH:mm") : "";
+
         public Brush StatusBrush
         {
             get => _statusBrush;
@@ -244,6 +246,7 @@ namespace MultiRoomTimer.ViewModels
                 OnPropertyChanged(nameof(SelectedCourse));
                 OnPropertyChanged(nameof(SelectedType));
             }
+            OnPropertyChanged(nameof(EndTimeString));
         }
 
         private void UpdateStatusBrush()

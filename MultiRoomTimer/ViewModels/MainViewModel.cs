@@ -6,51 +6,69 @@ using System.Linq;
 using System.Windows.Input;
 using System;
 using System.Collections.Generic;
+using System.Windows;
 
 namespace MultiRoomTimer.ViewModels
 {
     public class MainViewModel : ViewModelBase
     {
         public ObservableCollection<RoomViewModel> Rooms { get; }
-        public ICommand ExportAllCommand { get; }
+        public ICommand GenerateReportCommand { get; }
+        public string AppVersion => "Ver.3.1.5";
 
+        private readonly JsonDataStorageService _jsonDataStorageService;
         private readonly ExcelExportService _excelExportService;
 
         public MainViewModel()
         {
+            _jsonDataStorageService = new JsonDataStorageService();
             _excelExportService = new ExcelExportService();
 
             Rooms = new ObservableCollection<RoomViewModel>();
             for (int i = 1; i <= 19; i++)
             {
                 var roomVM = new RoomViewModel(new RoomSession(i));
-                roomVM.SessionEnded += OnSessionEnded; // Subscribe to the event
+                roomVM.SessionEnded += OnSessionEnded;
                 Rooms.Add(roomVM);
             }
 
-            ExportAllCommand = new RelayCommand(ExportAllData, CanExportAllData);
+            GenerateReportCommand = new RelayCommand(GenerateReport, CanGenerateReport);
+            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+            timer.Tick += (s, e) => (GenerateReportCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            timer.Start();
         }
 
         private void OnSessionEnded(RoomSession endedSession)
         {
-            var fileName = $"TimerReport_{DateTime.Now:yyyyMMdd}.xlsx";
-            _excelExportService.AppendSession(endedSession, fileName);
-            // Optionally, show a success message to the user
+            _jsonDataStorageService.AppendSession(endedSession);
+            (GenerateReportCommand as RelayCommand)?.RaiseCanExecuteChanged();
         }
 
-        private bool CanExportAllData(object? parameter)
+        private bool CanGenerateReport(object? parameter)
         {
-            return Rooms.Any(r => r.GetSession().Status != TimerStatus.Available);
+            return _jsonDataStorageService.HasAnyData();
         }
 
-        private void ExportAllData(object? parameter)
+        private void GenerateReport(object? parameter)
         {
-            var activeSessions = Rooms.Select(vm => vm.GetSession())
-                                      .Where(s => s.Status != TimerStatus.Available);
-
-            var fileName = $"TimerReport_All_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-            _excelExportService.ExportAll(activeSessions, fileName);
-            // Optionally, show a success message to the user
+            try
+            {
+                var year = DateTime.Now.Year;
+                var yearlyData = _jsonDataStorageService.GetSessionsForYear(year);
+                if (yearlyData.Any())
+                {
+                    _excelExportService.GenerateYearlyReport(yearlyData, year);
+                    MessageBox.Show($"Report for {year} generated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"No data found for {year}.", "No Data", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while generating the report: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }

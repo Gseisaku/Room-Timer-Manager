@@ -31,7 +31,15 @@ namespace MultiRoomTimer.ViewModels
         public string CastName
         {
             get => _session.CastName ?? "";
-            set { if (_session.CastName != value) { _session.CastName = value; OnPropertyChanged(); } }
+            set
+            {
+                if (_session.CastName != value)
+                {
+                    _session.CastName = value;
+                    OnPropertyChanged();
+                    StartCommand.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public List<int> CourseOptions { get; } = new List<int> { 45, 60, 70, 90, 120 };
@@ -75,6 +83,8 @@ namespace MultiRoomTimer.ViewModels
             ? $"+{(int)_displayTime.TotalMinutes:00}:{_displayTime.Seconds:00}"
             : $"{(int)_displayTime.TotalMinutes:00}:{_displayTime.Seconds:00}";
 
+        public string EndTimeString => _session.EndTime.HasValue && _session.Status != TimerStatus.Available && _session.Status != TimerStatus.Finished ? _session.EndTime.Value.ToString("HH:mm") : "";
+
         public Brush StatusBrush
         {
             get => _statusBrush;
@@ -107,7 +117,7 @@ namespace MultiRoomTimer.ViewModels
 
         // --- Command Logic ---
 
-        private bool CanStart(object? p) => _session.Status == TimerStatus.Available && _session.CourseMinutes > 0 && _session.Type.HasValue;
+        private bool CanStart(object? p) => _session.Status == TimerStatus.Available && !string.IsNullOrWhiteSpace(CastName) && _session.CourseMinutes > 0 && _session.Type.HasValue;
         private void ExecuteStart(object? p)
         {
             _session.Status = TimerStatus.Running;
@@ -236,6 +246,7 @@ namespace MultiRoomTimer.ViewModels
                 OnPropertyChanged(nameof(SelectedCourse));
                 OnPropertyChanged(nameof(SelectedType));
             }
+            OnPropertyChanged(nameof(EndTimeString));
         }
 
         private void UpdateStatusBrush()

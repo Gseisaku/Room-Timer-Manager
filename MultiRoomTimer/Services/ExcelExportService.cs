@@ -9,8 +9,8 @@ namespace MultiRoomTimer.Services
     public class ExcelExportService
     {
         private readonly string[] _headers = {
-            "Room Number", "Cast Name", "Course (min)", "Type",
-            "Start Time", "End Time", "Overtime", "Remarks"
+            "Seq", "Room Number", "Cast Name", "Course (min)", "Type",
+            "Start Time", "End Time", "Sched EndTime", "Overtime", "Remarks"
         };
 
         public void GenerateYearlyReport(Dictionary<string, List<RoomSession>> yearlySessions, int year)
@@ -27,9 +27,10 @@ namespace MultiRoomTimer.Services
                     SetHeaders(worksheet);
 
                     int row = 2;
+                    int seq = 1;
                     foreach (var session in yearlySessions[date])
                     {
-                        WriteSessionRow(worksheet, row++, session);
+                        WriteSessionRow(worksheet, row++, session, seq++);
                     }
                     worksheet.Columns().AdjustToContents();
                 }
@@ -50,16 +51,20 @@ namespace MultiRoomTimer.Services
             worksheet.Row(1).Style.Font.Bold = true;
         }
 
-        private void WriteSessionRow(IXLWorksheet worksheet, int row, RoomSession session)
+        private void WriteSessionRow(IXLWorksheet worksheet, int row, RoomSession session, int seq)
         {
-            worksheet.Cell(row, 1).Value = session.RoomNumber;
-            worksheet.Cell(row, 2).Value = session.CastName;
-            worksheet.Cell(row, 3).Value = session.CourseMinutes;
-            worksheet.Cell(row, 4).Value = session.Type?.ToString();
-            worksheet.Cell(row, 5).Value = session.StartTime?.ToString("HH:mm:ss");
-            worksheet.Cell(row, 6).Value = session.EndTime?.ToString("HH:mm:ss");
-            worksheet.Cell(row, 7).Value = session.Overtime.TotalSeconds > 0 ? session.Overtime.ToString(@"hh\:mm\:ss") : "";
-            worksheet.Cell(row, 8).Value = "";
+            var scheduledEndTime = session.StartTime?.AddMinutes(session.CourseMinutes);
+
+            worksheet.Cell(row, 1).Value = seq;
+            worksheet.Cell(row, 2).Value = session.RoomNumber;
+            worksheet.Cell(row, 3).Value = session.CastName;
+            worksheet.Cell(row, 4).Value = session.CourseMinutes;
+            worksheet.Cell(row, 5).Value = session.Type?.ToString();
+            worksheet.Cell(row, 6).Value = session.StartTime?.ToString("HH:mm:ss");
+            worksheet.Cell(row, 7).Value = session.EndTime?.ToString("HH:mm:ss");
+            worksheet.Cell(row, 8).Value = scheduledEndTime?.ToString("HH:mm:ss");
+            worksheet.Cell(row, 9).Value = session.Overtime.TotalSeconds > 0 ? session.Overtime.ToString(@"hh\:mm\:ss") : "";
+            worksheet.Cell(row, 10).Value = ""; // Remarks
         }
     }
 }

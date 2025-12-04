@@ -169,6 +169,7 @@ namespace MultiRoomTimer.ViewModels
                 Type = _session.Type,
                 StartTime = _session.StartTime,
                 EndTime = _session.EndTime,
+                ScheduledEndTime = _session.StartTime?.AddMinutes(_session.CourseMinutes),
                 Overtime = _session.Overtime
             };
             SessionEnded?.Invoke(sessionSnapshot);

@@ -32,6 +32,8 @@ namespace MultiRoomTimer.Models
         public SessionType? Type { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public DateTime? ScheduledEndTime { get; set; }
+        public int Seq { get; set; }
         public TimeSpan Overtime { get; set; }
         public TimeSpan RemainingTimeOnPause { get; set; }
         public bool WasFinishedWhenPaused { get; set; }
@@ -51,6 +53,8 @@ namespace MultiRoomTimer.Models
             Type = null;
             StartTime = null;
             EndTime = null;
+            ScheduledEndTime = null;
+            Seq = 0;
             Overtime = TimeSpan.Zero;
             RemainingTimeOnPause = TimeSpan.Zero;
             WasFinishedWhenPaused = false;

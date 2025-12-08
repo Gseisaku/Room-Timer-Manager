@@ -64,9 +64,9 @@
                             </Grid.RowDefinitions>
 
                             <!-- Room Number and Timer Display -->
-                            <TextBlock Grid.Row="0" Text="{Binding RoomNumber, StringFormat='Room {0}'}" FontWeight="Bold" FontSize="16" Margin="5" HorizontalAlignment="Center"/>
-                            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,10">
-                                <TextBlock Text="{Binding DisplayTimeString}" FontSize="32" FontWeight="Bold" />
+                            <StackPanel Grid.Row="0" Grid.RowSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,10">
+                                <TextBlock Text="{Binding RoomNumber, StringFormat='{0}号室'}" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                <TextBlock Text="{Binding DisplayTimeString}" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding EndTimeString, StringFormat='( ~ {0})'}" FontSize="20" VerticalAlignment="Bottom" Margin="10,0,0,3" Foreground="DarkSlateGray"/>
                             </StackPanel>
 

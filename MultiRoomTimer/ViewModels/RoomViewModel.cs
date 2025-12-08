@@ -83,7 +83,7 @@ namespace MultiRoomTimer.ViewModels
             ? $"+{(int)_displayTime.TotalMinutes:00}:{_displayTime.Seconds:00}"
             : $"{(int)_displayTime.TotalMinutes:00}:{_displayTime.Seconds:00}";
 
-        public string EndTimeString => _session.EndTime.HasValue && _session.Status != TimerStatus.Available && _session.Status != TimerStatus.Finished ? _session.EndTime.Value.ToString("HH:mm") : "";
+        public string EndTimeString => _session.EndTime.HasValue && _session.Status != TimerStatus.Available ? _session.EndTime.Value.ToString("HH:mm") : "";
 
         public Brush StatusBrush
         {
@@ -127,28 +127,40 @@ namespace MultiRoomTimer.ViewModels
             UpdateStatus();
         }
 
-        private bool CanTogglePause(object? p) => _session.Status == TimerStatus.Running || _session.Status == TimerStatus.Warning || _session.Status == TimerStatus.Paused;
+        private bool CanTogglePause(object? p) => _session.Status == TimerStatus.Running || _session.Status == TimerStatus.Warning || _session.Status == TimerStatus.Paused || _session.Status == TimerStatus.Finished;
         private void ExecuteTogglePause(object? p)
         {
             if (_session.Status == TimerStatus.Paused) // Resume
             {
-                _session.Status = TimerStatus.Running;
-                _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
+                _session.Status = _session.StatusBeforePause;
+                if (_session.Status != TimerStatus.Finished)
+                {
+                    _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
+                }
                 _session.RemainingTimeOnPause = TimeSpan.Zero;
                 _timer.Start();
             }
             else // Pause
             {
                 _timer.Stop();
+                _session.StatusBeforePause = _session.Status;
                 _session.Status = TimerStatus.Paused;
                 if (_session.EndTime.HasValue)
                 {
-                    _session.RemainingTimeOnPause = _session.EndTime.Value - DateTime.Now;
-                    if (_session.RemainingTimeOnPause.TotalSeconds < 0)
+                    if (_session.StatusBeforePause != TimerStatus.Finished)
                     {
-                        _session.RemainingTimeOnPause = TimeSpan.Zero;
+                        _session.RemainingTimeOnPause = _session.EndTime.Value - DateTime.Now;
+                        if (_session.RemainingTimeOnPause.TotalSeconds < 0)
+                        {
+                            _session.RemainingTimeOnPause = TimeSpan.Zero;
+                        }
+                        DisplayTime = _session.RemainingTimeOnPause;
                     }
-                    DisplayTime = _session.RemainingTimeOnPause;
+                    else
+                    {
+                        // Overtime is already the remaining time
+                        _session.RemainingTimeOnPause = _session.Overtime;
+                    }
                 }
             }
             UpdateStatus();

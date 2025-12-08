@@ -34,7 +34,9 @@ namespace MultiRoomTimer.Services
                 }
             }
 
+            session.Seq = sessions.Count + 1;
             sessions.Add(session);
+
             var options = new JsonSerializerOptions { WriteIndented = true };
             var newJson = JsonSerializer.Serialize(sessions, options);
             File.WriteAllText(filePath, newJson);

@@ -26,16 +26,19 @@ namespace MultiRoomTimer.Models
 
     public class RoomSession
     {
+        public int Seq { get; set; }
         public int RoomNumber { get; set; }
         public string? CastName { get; set; }
         public int CourseMinutes { get; set; }
         public SessionType? Type { get; set; }
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public DateTime? ScheduledEndTime { get; set; }
         public TimeSpan Overtime { get; set; }
         public TimeSpan RemainingTimeOnPause { get; set; }
         public bool WasFinishedWhenPaused { get; set; }
         public TimerStatus Status { get; set; }
+        public TimerStatus StatusBeforePause { get; set; }
 
         public RoomSession(int roomNumber)
         {
@@ -51,9 +54,12 @@ namespace MultiRoomTimer.Models
             Type = null;
             StartTime = null;
             EndTime = null;
+            ScheduledEndTime = null;
+            Seq = 0;
             Overtime = TimeSpan.Zero;
             RemainingTimeOnPause = TimeSpan.Zero;
             WasFinishedWhenPaused = false;
+            StatusBeforePause = TimerStatus.Available;
         }
     }
 }

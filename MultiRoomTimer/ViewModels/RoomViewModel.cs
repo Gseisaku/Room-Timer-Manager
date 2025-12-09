@@ -15,6 +15,7 @@ namespace MultiRoomTimer.ViewModels
         private TimeSpan _displayTime;
         private Brush _statusBrush = Brushes.LightGray;
         private string _pauseButtonContent = "一時停止";
+        private string _estimatedEndTimeString = "";
 
         // --- Commands ---
         public RelayCommand StartCommand { get; }
@@ -99,6 +100,12 @@ namespace MultiRoomTimer.ViewModels
 
         public bool IsAvailable => _session.Status == TimerStatus.Available;
 
+        public string EstimatedEndTimeString
+        {
+            get => _estimatedEndTimeString;
+            set { _estimatedEndTimeString = value; OnPropertyChanged(); }
+        }
+
         // --- Constructor ---
         public RoomViewModel(RoomSession session)
         {
@@ -123,6 +130,7 @@ namespace MultiRoomTimer.ViewModels
             _session.Status = TimerStatus.Running;
             _session.StartTime = DateTime.Now;
             _session.EndTime = _session.StartTime.Value.AddMinutes(_session.CourseMinutes);
+            EstimatedEndTimeString = $"終了予定: {_session.EndTime:HH:mm}";
             _timer.Start();
             UpdateStatus();
         }
@@ -188,6 +196,7 @@ namespace MultiRoomTimer.ViewModels
 
             _session.Reset();
             DisplayTime = TimeSpan.Zero;
+            EstimatedEndTimeString = "";
             UpdateStatus();
         }
 
@@ -197,6 +206,7 @@ namespace MultiRoomTimer.ViewModels
             _timer.Stop();
             _session.Reset();
             DisplayTime = TimeSpan.Zero;
+            EstimatedEndTimeString = "";
             UpdateStatus();
         }
 

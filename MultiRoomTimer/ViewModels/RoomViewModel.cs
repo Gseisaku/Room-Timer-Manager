@@ -279,7 +279,7 @@ namespace MultiRoomTimer.ViewModels
                 TimerStatus.Available => Brushes.LightGray,
                 TimerStatus.Running => Brushes.LightGreen,
                 TimerStatus.Warning => Brushes.Yellow,
-                TimerStatus.Paused => Brushes.LightBlue,
+                TimerStatus.Paused => Brushes.LightGreen,
                 TimerStatus.Finished => Brushes.Salmon,
                 _ => Brushes.LightGray,
             };

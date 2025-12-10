@@ -229,7 +229,7 @@ namespace MultiRoomTimer.ViewModels
             UpdateStatus();
         }
 
-        private bool CanReset(object? p) => _session.Status != TimerStatus.Available;
+        private bool CanReset(object? p) => _session.Status == TimerStatus.Paused;
         private void ExecuteReset(object? p)
         {
             _timer.Stop();

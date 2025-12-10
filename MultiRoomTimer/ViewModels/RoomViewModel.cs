@@ -180,10 +180,6 @@ namespace MultiRoomTimer.ViewModels
             if (_session.Status == TimerStatus.Paused) // Resume
             {
                 _session.Status = _session.StatusBeforePause;
-                if (_session.Status != TimerStatus.Finished)
-                {
-                    _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
-                }
                 _session.RemainingTimeOnPause = TimeSpan.Zero;
                 _timer.Start();
             }
@@ -258,11 +254,25 @@ namespace MultiRoomTimer.ViewModels
         private bool CanAddTime(object? p) => _session.Status == TimerStatus.Paused;
         private void ExecuteAddTime(object? p)
         {
-            if (_session.RemainingTimeOnPause.TotalSeconds > 0)
+            if (!_session.EndTime.HasValue) return;
+
+            _session.EndTime = _session.EndTime.Value.AddMinutes(30);
+
+            // If time was added during a pause in overtime, reset the call flags
+            if (_session.StatusBeforePause == TimerStatus.Finished)
             {
-                _session.RemainingTimeOnPause = _session.RemainingTimeOnPause.Add(TimeSpan.FromMinutes(30));
-                DisplayTime = _session.RemainingTimeOnPause;
+                _session.TenMinuteCallMade = false;
+                _session.EndCallMade = false;
+                _session.IsCallButtonPressed = false;
+                OnPropertyChanged(nameof(TenMinuteCallStatusText));
+                OnPropertyChanged(nameof(EndCallStatusText));
+                CallCommand.RaiseCanExecuteChanged();
             }
+
+            // Recalculate remaining time and update display
+            var remaining = _session.EndTime.Value - DateTime.Now;
+            _session.RemainingTimeOnPause = remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
+            DisplayTime = _session.RemainingTimeOnPause;
         }
 
         // --- Timer Logic ---

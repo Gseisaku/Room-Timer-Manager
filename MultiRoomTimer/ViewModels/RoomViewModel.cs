@@ -16,6 +16,7 @@ namespace MultiRoomTimer.ViewModels
         private Brush _statusBrush = Brushes.LightGray;
         private string _pauseButtonContent = "一時停止";
         private string _estimatedEndTimeString = "";
+        private bool _isBlinkingAfterCall = false;
 
         // --- Commands ---
         public RelayCommand StartCommand { get; }
@@ -23,6 +24,7 @@ namespace MultiRoomTimer.ViewModels
         public RelayCommand EndCommand { get; }
         public RelayCommand ResetCommand { get; }
         public RelayCommand AddTimeCommand { get; }
+        public RelayCommand CallCommand { get; }
 
         public event Action<RoomSession>? SessionEnded;
 
@@ -106,6 +108,19 @@ namespace MultiRoomTimer.ViewModels
             set { _estimatedEndTimeString = value; OnPropertyChanged(); }
         }
 
+        public bool IsBlinkingAfterCall
+        {
+            get => _isBlinkingAfterCall;
+            set
+            {
+                if (_isBlinkingAfterCall != value)
+                {
+                    _isBlinkingAfterCall = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         // --- Constructor ---
         public RoomViewModel(RoomSession session)
         {
@@ -118,11 +133,24 @@ namespace MultiRoomTimer.ViewModels
             EndCommand = new RelayCommand(ExecuteEnd, CanEnd);
             ResetCommand = new RelayCommand(ExecuteReset, CanReset);
             AddTimeCommand = new RelayCommand(ExecuteAddTime, CanAddTime);
+            CallCommand = new RelayCommand(ExecuteCall, CanCall);
 
             UpdateStatus();
         }
 
         // --- Command Logic ---
+
+        private bool CanCall(object? p) => (_session.Status == TimerStatus.Warning || _session.Status == TimerStatus.Finished) && !_session.IsCallButtonPressed;
+        private void ExecuteCall(object? p)
+        {
+            _session.IsCallButtonPressed = true;
+            if (_session.Status == TimerStatus.Finished)
+            {
+                IsBlinkingAfterCall = true;
+            }
+            UpdateStatusBrush();
+            CallCommand.RaiseCanExecuteChanged();
+        }
 
         private bool CanStart(object? p) => _session.Status == TimerStatus.Available && !string.IsNullOrWhiteSpace(CastName) && _session.CourseMinutes > 0 && _session.Type.HasValue;
         private void ExecuteStart(object? p)
@@ -197,6 +225,7 @@ namespace MultiRoomTimer.ViewModels
             _session.Reset();
             DisplayTime = TimeSpan.Zero;
             EstimatedEndTimeString = "";
+            IsBlinkingAfterCall = false;
             UpdateStatus();
         }
 
@@ -207,6 +236,7 @@ namespace MultiRoomTimer.ViewModels
             _session.Reset();
             DisplayTime = TimeSpan.Zero;
             EstimatedEndTimeString = "";
+            IsBlinkingAfterCall = false;
             UpdateStatus();
         }
 
@@ -234,6 +264,7 @@ namespace MultiRoomTimer.ViewModels
                     {
                         _session.Status = newStatus;
                         UpdateStatusBrush();
+                        CallCommand.RaiseCanExecuteChanged();
                     }
                 }
                 else
@@ -244,6 +275,7 @@ namespace MultiRoomTimer.ViewModels
                     {
                          _session.Status = TimerStatus.Finished;
                          UpdateStatusBrush();
+                         CallCommand.RaiseCanExecuteChanged();
                     }
                 }
             }
@@ -261,6 +293,7 @@ namespace MultiRoomTimer.ViewModels
             EndCommand.RaiseCanExecuteChanged();
             ResetCommand.RaiseCanExecuteChanged();
             AddTimeCommand.RaiseCanExecuteChanged();
+            CallCommand.RaiseCanExecuteChanged();
 
             if (_session.Status == TimerStatus.Available)
             {
@@ -274,6 +307,11 @@ namespace MultiRoomTimer.ViewModels
 
         private void UpdateStatusBrush()
         {
+            if (_session.IsCallButtonPressed)
+            {
+                StatusBrush = Brushes.LightGreen;
+                return;
+            }
             StatusBrush = _session.Status switch
             {
                 TimerStatus.Available => Brushes.LightGray,

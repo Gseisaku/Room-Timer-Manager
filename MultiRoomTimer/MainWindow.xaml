@@ -134,7 +134,7 @@
 
                             <!-- Buttons -->
                             <WrapPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="5">
-                                <Button Content="開始" Command="{Binding StartCommand}" Margin="2" Padding="8,3"/>
+                                <Button Content="開始" Command="{Binding StartCommand}" Margin="2" Padding="12,5" FontSize="16"/>
                                 <Button Content="Call" Command="{Binding CallCommand}" Margin="2" Padding="8,3"/>
                                 <Button Content="{Binding PauseButtonContent}" Command="{Binding TogglePauseCommand}" Margin="2" Padding="8,3"/>
                                 <Button Content="+30" Command="{Binding AddTimeCommand}" Margin="2" Padding="8,3"/>

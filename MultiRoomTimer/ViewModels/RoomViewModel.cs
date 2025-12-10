@@ -274,6 +274,7 @@ namespace MultiRoomTimer.ViewModels
                     if (_session.Status != TimerStatus.Finished)
                     {
                          _session.Status = TimerStatus.Finished;
+                         _session.IsCallButtonPressed = false;
                          UpdateStatusBrush();
                          CallCommand.RaiseCanExecuteChanged();
                     }

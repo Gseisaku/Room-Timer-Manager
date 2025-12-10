@@ -30,6 +30,8 @@ namespace MultiRoomTimer.ViewModels
 
         // --- Properties for UI Binding ---
         public int RoomNumber => _session.RoomNumber;
+        public string TenMinuteCallStatusText => _session.TenMinuteCallMade ? "済" : "-";
+        public string EndCallStatusText => _session.EndCallMade ? "済" : "-";
 
         public string CastName
         {
@@ -144,10 +146,19 @@ namespace MultiRoomTimer.ViewModels
         private void ExecuteCall(object? p)
         {
             _session.IsCallButtonPressed = true;
-            if (_session.Status == TimerStatus.Finished)
+
+            if (_session.Status == TimerStatus.Warning)
             {
+                _session.TenMinuteCallMade = true;
+                OnPropertyChanged(nameof(TenMinuteCallStatusText));
+            }
+            else if (_session.Status == TimerStatus.Finished)
+            {
+                _session.EndCallMade = true;
+                OnPropertyChanged(nameof(EndCallStatusText));
                 IsBlinkingAfterCall = true;
             }
+
             UpdateStatusBrush();
             CallCommand.RaiseCanExecuteChanged();
         }
@@ -226,6 +237,8 @@ namespace MultiRoomTimer.ViewModels
             DisplayTime = TimeSpan.Zero;
             EstimatedEndTimeString = "";
             IsBlinkingAfterCall = false;
+            OnPropertyChanged(nameof(TenMinuteCallStatusText));
+            OnPropertyChanged(nameof(EndCallStatusText));
             UpdateStatus();
         }
 
@@ -237,6 +250,8 @@ namespace MultiRoomTimer.ViewModels
             DisplayTime = TimeSpan.Zero;
             EstimatedEndTimeString = "";
             IsBlinkingAfterCall = false;
+            OnPropertyChanged(nameof(TenMinuteCallStatusText));
+            OnPropertyChanged(nameof(EndCallStatusText));
             UpdateStatus();
         }
 

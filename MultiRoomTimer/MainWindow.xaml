@@ -105,10 +105,20 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0">
-                                    <StackPanel Orientation="Horizontal" Margin="5,0">
-                                        <TextBlock Text="キャスト: " VerticalAlignment="Center"/>
-                                        <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" IsEnabled="{Binding IsAvailable}"/>
-                                    </StackPanel>
+                                    <WrapPanel Margin="5,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="キャスト: " VerticalAlignment="Center"/>
+                                            <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="80" IsEnabled="{Binding IsAvailable}"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                                            <TextBlock Text="10分前Call: " VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding TenMinuteCallStatusText}" VerticalAlignment="Center" FontWeight="Bold"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                                            <TextBlock Text="終了Call: " VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding EndCallStatusText}" VerticalAlignment="Center" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </WrapPanel>
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="1">
@@ -135,10 +145,10 @@
                             <!-- Buttons -->
                             <WrapPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="5">
                                 <Button Content="開始" Command="{Binding StartCommand}" Margin="2" Padding="12,5" FontSize="16"/>
-                                <Button Content="Call" Command="{Binding CallCommand}" Margin="2" Padding="8,3" FontSize="16"/>
+                                <Button Content="Call" Command="{Binding CallCommand}" Margin="2" Padding="8,3" FontSize="12"/>
                                 <Button Content="{Binding PauseButtonContent}" Command="{Binding TogglePauseCommand}" Margin="2" Padding="8,3" FontSize="12"/>
                                 <Button Content="+30" Command="{Binding AddTimeCommand}" Margin="2" Padding="8,3" FontSize="12"/>
-                                <Button Content="終了" Command="{Binding EndCommand}" Margin="2" Padding="8,3" Background="IndianRed" Foreground="White" FontSize="16"/>
+                                <Button Content="終了" Command="{Binding EndCommand}" Margin="2" Padding="8,3" Background="IndianRed" Foreground="White" FontSize="12"/>
                                 <Button Content="消去" Command="{Binding ResetCommand}" Margin="2" Padding="8,3" FontSize="12"/>
                             </WrapPanel>
                         </Grid>

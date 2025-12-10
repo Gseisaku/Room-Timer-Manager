@@ -40,6 +40,8 @@ namespace MultiRoomTimer.Models
         public TimerStatus Status { get; set; }
         public TimerStatus StatusBeforePause { get; set; }
         public bool IsCallButtonPressed { get; set; }
+        public bool TenMinuteCallMade { get; set; }
+        public bool EndCallMade { get; set; }
 
         public RoomSession(int roomNumber)
         {
@@ -62,6 +64,8 @@ namespace MultiRoomTimer.Models
             WasFinishedWhenPaused = false;
             StatusBeforePause = TimerStatus.Available;
             IsCallButtonPressed = false;
+            TenMinuteCallMade = false;
+            EndCallMade = false;
         }
     }
 }

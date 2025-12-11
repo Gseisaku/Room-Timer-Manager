@@ -74,8 +74,6 @@ namespace MultiRoomTimer.ViewModels
                 {
                     _session.Type = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(IsManualTimeEntryVisible));
-                    OnPropertyChanged(nameof(IsCourseSelectionEnabled));
                     StartCommand.RaiseCanExecuteChanged();
                 }
             }
@@ -96,9 +94,7 @@ namespace MultiRoomTimer.ViewModels
             }
         }
 
-        public bool IsManualTimeEntryVisible => _session.Type == SessionType.H;
-
-        public bool IsCourseSelectionEnabled => !IsManualTimeEntryVisible || string.IsNullOrWhiteSpace(ManualEndTimeString);
+        public bool IsCourseSelectionEnabled => string.IsNullOrWhiteSpace(ManualEndTimeString);
 
         public TimeSpan DisplayTime
         {
@@ -193,9 +189,9 @@ namespace MultiRoomTimer.ViewModels
                 return false;
             }
 
-            if (IsManualTimeEntryVisible)
+            if (!string.IsNullOrWhiteSpace(ManualEndTimeString))
             {
-                return TimeSpan.TryParseExact(ManualEndTimeString, "hh\\:mm", CultureInfo.InvariantCulture, out _);
+                return TimeSpan.TryParseExact(ManualEndTimeString, "HH\\:mm", CultureInfo.InvariantCulture, out _);
             }
             else
             {
@@ -207,15 +203,19 @@ namespace MultiRoomTimer.ViewModels
             _session.Status = TimerStatus.Running;
             _session.StartTime = DateTime.Now;
 
-            if (IsManualTimeEntryVisible && TimeSpan.TryParseExact(ManualEndTimeString, "hh\\:mm", CultureInfo.InvariantCulture, out var manualTime))
+            if (!string.IsNullOrWhiteSpace(ManualEndTimeString) && TimeSpan.TryParseExact(ManualEndTimeString, "HH\\:mm", CultureInfo.InvariantCulture, out var manualTime))
             {
                 var now = DateTime.Now;
-                _session.EndTime = now.Date + manualTime;
-                // If the specified time is in the past (e.g., entered after midnight), assume it's for the next day.
-                if (_session.EndTime < now)
+                var startTimeWithSecondsReset = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
+                var manualEndTime = now.Date + manualTime;
+
+                if (manualEndTime < startTimeWithSecondsReset)
                 {
-                    _session.EndTime = _session.EndTime.Value.AddDays(1);
+                    manualEndTime = manualEndTime.AddDays(1);
                 }
+
+                var duration = manualEndTime - startTimeWithSecondsReset;
+                _session.EndTime = now.Add(duration);
             }
             else
             {
@@ -233,6 +233,10 @@ namespace MultiRoomTimer.ViewModels
             if (_session.Status == TimerStatus.Paused) // Resume
             {
                 _session.Status = _session.StatusBeforePause;
+                if (_session.Status != TimerStatus.Finished)
+                {
+                    _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
+                }
                 _session.RemainingTimeOnPause = TimeSpan.Zero;
                 _timer.Start();
             }
@@ -282,23 +286,23 @@ namespace MultiRoomTimer.ViewModels
             };
             SessionEnded?.Invoke(sessionSnapshot);
 
-            _session.Reset();
-            DisplayTime = TimeSpan.Zero;
-            EstimatedEndTimeString = "";
-            IsBlinkingAfterCall = false;
-            OnPropertyChanged(nameof(TenMinuteCallStatusText));
-            OnPropertyChanged(nameof(EndCallStatusText));
-            UpdateStatus();
+            ResetState();
         }
 
         private bool CanReset(object? p) => _session.Status == TimerStatus.Paused;
         private void ExecuteReset(object? p)
         {
             _timer.Stop();
+            ResetState();
+        }
+
+        private void ResetState()
+        {
             _session.Reset();
             DisplayTime = TimeSpan.Zero;
             EstimatedEndTimeString = "";
             IsBlinkingAfterCall = false;
+            ManualEndTimeString = "";
             OnPropertyChanged(nameof(TenMinuteCallStatusText));
             OnPropertyChanged(nameof(EndCallStatusText));
             UpdateStatus();
@@ -326,6 +330,7 @@ namespace MultiRoomTimer.ViewModels
             var remaining = _session.EndTime.Value - DateTime.Now;
             _session.RemainingTimeOnPause = remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
             DisplayTime = _session.RemainingTimeOnPause;
+            EstimatedEndTimeString = $"終了予定: {_session.EndTime:HH:mm}";
         }
 
         // --- Timer Logic ---

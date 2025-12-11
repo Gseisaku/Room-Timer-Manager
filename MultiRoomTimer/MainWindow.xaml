@@ -10,7 +10,6 @@
         Title="マルチルームタイマー管理システム" Height="850" Width="1400">
     <Window.Resources>
         <converters:RadioButtonValueConverter x:Key="RadioButtonValueConverter"/>
-        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style TargetType="RadioButton" x:Key="TabRadioButtonStyle">
             <Setter Property="Padding" Value="5,3"/>
@@ -135,13 +134,14 @@
 
                                 <StackPanel Grid.Row="2">
                                     <TextBlock Text="指名:" Margin="5,5,5,0"/>
-                                    <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
-                                        <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                        <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                        <RadioButton Content="本指" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                        <TextBox Text="{Binding ManualEndTimeString, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Margin="5,0"
-                                                 Visibility="{Binding IsManualTimeEntryVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                    </WrapPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="5,0">
+                                        <WrapPanel IsEnabled="{Binding IsAvailable}">
+                                            <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                            <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                            <RadioButton Content="本指" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        </WrapPanel>
+                                        <TextBox Text="{Binding ManualEndTimeString, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Margin="5,0"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Grid>
 

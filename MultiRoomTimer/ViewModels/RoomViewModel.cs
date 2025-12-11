@@ -17,6 +17,7 @@ namespace MultiRoomTimer.ViewModels
         private string _pauseButtonContent = "一時停止";
         private string _estimatedEndTimeString = "";
         private bool _isBlinkingAfterCall = false;
+        private string _manualEndTimeString = "";
 
         // --- Commands ---
         public RelayCommand StartCommand { get; }
@@ -72,10 +73,31 @@ namespace MultiRoomTimer.ViewModels
                 {
                     _session.Type = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsManualTimeEntryVisible));
+                    OnPropertyChanged(nameof(IsCourseSelectionEnabled));
                     StartCommand.RaiseCanExecuteChanged();
                 }
             }
         }
+
+        public string ManualEndTimeString
+        {
+            get => _manualEndTimeString;
+            set
+            {
+                if (_manualEndTimeString != value)
+                {
+                    _manualEndTimeString = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsCourseSelectionEnabled));
+                    StartCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        public bool IsManualTimeEntryVisible => _session.Type == SessionType.H;
+
+        public bool IsCourseSelectionEnabled => !IsManualTimeEntryVisible || string.IsNullOrWhiteSpace(ManualEndTimeString);
 
         public TimeSpan DisplayTime
         {
@@ -163,12 +185,42 @@ namespace MultiRoomTimer.ViewModels
             CallCommand.RaiseCanExecuteChanged();
         }
 
-        private bool CanStart(object? p) => _session.Status == TimerStatus.Available && !string.IsNullOrWhiteSpace(CastName) && _session.CourseMinutes > 0 && _session.Type.HasValue;
+        private bool CanStart(object? p)
+        {
+            if (_session.Status != TimerStatus.Available || string.IsNullOrWhiteSpace(CastName) || !_session.Type.HasValue)
+            {
+                return false;
+            }
+
+            if (IsManualTimeEntryVisible)
+            {
+                return TimeSpan.TryParseExact(ManualEndTimeString, "hh\\:mm", CultureInfo.InvariantCulture, out _);
+            }
+            else
+            {
+                return _session.CourseMinutes > 0;
+            }
+        }
         private void ExecuteStart(object? p)
         {
             _session.Status = TimerStatus.Running;
             _session.StartTime = DateTime.Now;
-            _session.EndTime = _session.StartTime.Value.AddMinutes(_session.CourseMinutes);
+
+            if (IsManualTimeEntryVisible && TimeSpan.TryParseExact(ManualEndTimeString, "hh\\:mm", CultureInfo.InvariantCulture, out var manualTime))
+            {
+                var now = DateTime.Now;
+                _session.EndTime = now.Date + manualTime;
+                // If the specified time is in the past (e.g., entered after midnight), assume it's for the next day.
+                if (_session.EndTime < now)
+                {
+                    _session.EndTime = _session.EndTime.Value.AddDays(1);
+                }
+            }
+            else
+            {
+                _session.EndTime = _session.StartTime.Value.AddMinutes(_session.CourseMinutes);
+            }
+
             EstimatedEndTimeString = $"終了予定: {_session.EndTime:HH:mm}";
             _timer.Start();
             UpdateStatus();

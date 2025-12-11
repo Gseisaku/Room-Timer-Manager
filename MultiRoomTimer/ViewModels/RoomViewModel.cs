@@ -315,15 +315,23 @@ namespace MultiRoomTimer.ViewModels
 
             _session.EndTime = _session.EndTime.Value.AddMinutes(30);
 
-            // If time was added during a pause in overtime, reset the call flags
+            // If time was added during a pause in overtime, reset the state
             if (_session.StatusBeforePause == TimerStatus.Finished)
             {
+                IsBlinkingAfterCall = false; // Stop the blinking
+
+                // Reset call flags
                 _session.TenMinuteCallMade = false;
                 _session.EndCallMade = false;
                 _session.IsCallButtonPressed = false;
                 OnPropertyChanged(nameof(TenMinuteCallStatusText));
                 OnPropertyChanged(nameof(EndCallStatusText));
                 CallCommand.RaiseCanExecuteChanged();
+
+                // When resumed, the timer should no longer be in the "Finished" (overtime) state.
+                // Determine the new state based on the updated remaining time.
+                var newRemainingTime = _session.EndTime.Value - DateTime.Now;
+                _session.StatusBeforePause = newRemainingTime.TotalMinutes < 10 ? TimerStatus.Warning : TimerStatus.Running;
             }
 
             // Recalculate remaining time and update display

@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace MultiRoomTimer.ViewModels
 {

@@ -10,6 +10,7 @@
         Title="マルチルームタイマー管理システム" Height="850" Width="1400">
     <Window.Resources>
         <converters:RadioButtonValueConverter x:Key="RadioButtonValueConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style TargetType="RadioButton" x:Key="TabRadioButtonStyle">
             <Setter Property="Padding" Value="5,3"/>
@@ -123,7 +124,7 @@
 
                                 <StackPanel Grid.Row="1">
                                     <TextBlock Text="コース (分):" Margin="5,5,5,0"/>
-                                    <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
+                                    <WrapPanel Margin="5,0" IsEnabled="{Binding IsCourseSelectionEnabled}">
                                         <RadioButton Content="45" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=45, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                         <RadioButton Content="60" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=60, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                         <RadioButton Content="70" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=70, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
@@ -138,6 +139,8 @@
                                         <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                         <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                         <RadioButton Content="本指" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <TextBox Text="{Binding ManualEndTimeString, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Margin="5,0"
+                                                 Visibility="{Binding IsManualTimeEntryVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     </WrapPanel>
                                 </StackPanel>
                             </Grid>

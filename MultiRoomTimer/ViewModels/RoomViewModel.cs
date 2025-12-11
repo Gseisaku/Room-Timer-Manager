@@ -191,7 +191,7 @@ namespace MultiRoomTimer.ViewModels
 
             if (!string.IsNullOrWhiteSpace(ManualEndTimeString))
             {
-                return TimeSpan.TryParseExact(ManualEndTimeString, "HH\\:mm", CultureInfo.InvariantCulture, out _);
+                return TimeSpan.TryParseExact(ManualEndTimeString, new[] { "hh\\:mm", "HH\\:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
             }
             else
             {
@@ -203,7 +203,7 @@ namespace MultiRoomTimer.ViewModels
             _session.Status = TimerStatus.Running;
             _session.StartTime = DateTime.Now;
 
-            if (!string.IsNullOrWhiteSpace(ManualEndTimeString) && TimeSpan.TryParseExact(ManualEndTimeString, "HH\\:mm", CultureInfo.InvariantCulture, out var manualTime))
+            if (!string.IsNullOrWhiteSpace(ManualEndTimeString) && TimeSpan.TryParseExact(ManualEndTimeString, new[] { "hh\\:mm", "HH\\:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out var manualTime))
             {
                 var now = DateTime.Now;
                 var startTimeWithSecondsReset = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);

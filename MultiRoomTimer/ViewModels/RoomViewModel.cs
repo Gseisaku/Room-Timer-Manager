@@ -201,29 +201,30 @@ namespace MultiRoomTimer.ViewModels
 
         private bool CanStart(object? p)
         {
-            // First, check the base conditions that are always required.
-            bool baseConditionsMet = _session.Status == TimerStatus.Available &&
-                                     !string.IsNullOrWhiteSpace(CastName) &&
-                                     _session.Type.HasValue;
-
-            if (!baseConditionsMet)
+            // Base conditions must always be met.
+            if (_session.Status != TimerStatus.Available || string.IsNullOrWhiteSpace(CastName) || !_session.Type.HasValue)
             {
                 return false;
             }
 
-            // Next, determine if the conditions for starting with a course are met.
-            bool canStartWithCourse = IsCourseSelectionEnabled && _session.CourseMinutes > 0;
+            // Determine the entry mode. If any manual time field has input, it's manual mode.
+            bool isManualMode = !string.IsNullOrWhiteSpace(ManualEndHourString) || !string.IsNullOrWhiteSpace(ManualEndMinuteString);
 
-            // Then, determine if the conditions for starting with a manual time are met.
-            bool canStartWithManualTime = false;
-            if (!IsCourseSelectionEnabled)
+            if (isManualMode)
             {
+                // In manual mode, both hour and minute must be filled and form a valid time.
+                if (string.IsNullOrWhiteSpace(ManualEndHourString) || string.IsNullOrWhiteSpace(ManualEndMinuteString))
+                {
+                    return false; // Incomplete time
+                }
                 var manualTimeString = $"{ManualEndHourString}:{ManualEndMinuteString}";
-                canStartWithManualTime = TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
+                return TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
             }
-
-            // The start button can be enabled if either of the specific modes is valid.
-            return canStartWithCourse || canStartWithManualTime;
+            else
+            {
+                // In course mode, a course must be selected.
+                return _session.CourseMinutes > 0;
+            }
         }
         private void ExecuteStart(object? p)
         {
@@ -261,10 +262,8 @@ namespace MultiRoomTimer.ViewModels
             if (_session.Status == TimerStatus.Paused) // Resume
             {
                 _session.Status = _session.StatusBeforePause;
-                if (_session.Status != TimerStatus.Finished)
-                {
-                    _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
-                }
+                // Recalculate EndTime based on the current time and the time that was remaining.
+                _session.EndTime = DateTime.Now.Add(_session.RemainingTimeOnPause);
                 _session.RemainingTimeOnPause = TimeSpan.Zero;
                 _timer.Start();
             }
@@ -275,20 +274,12 @@ namespace MultiRoomTimer.ViewModels
                 _session.Status = TimerStatus.Paused;
                 if (_session.EndTime.HasValue)
                 {
-                    if (_session.StatusBeforePause != TimerStatus.Finished)
-                    {
-                        _session.RemainingTimeOnPause = _session.EndTime.Value - DateTime.Now;
-                        if (_session.RemainingTimeOnPause.TotalSeconds < 0)
-                        {
-                            _session.RemainingTimeOnPause = TimeSpan.Zero;
-                        }
-                        DisplayTime = _session.RemainingTimeOnPause;
-                    }
-                    else
-                    {
-                        // Overtime is already the remaining time
-                        _session.RemainingTimeOnPause = _session.Overtime;
-                    }
+                    // Always calculate remaining time from EndTime.
+                    // This will be negative if in overtime.
+                    _session.RemainingTimeOnPause = _session.EndTime.Value - DateTime.Now;
+                    DisplayTime = _session.StatusBeforePause == TimerStatus.Finished
+                                ? _session.Overtime
+                                : _session.RemainingTimeOnPause;
                 }
             }
             UpdateStatus();
@@ -342,16 +333,15 @@ namespace MultiRoomTimer.ViewModels
         {
             if (!_session.EndTime.HasValue) return;
 
-            // First, always extend the final end time
+            // First, always extend the final end time.
             _session.EndTime = _session.EndTime.Value.AddMinutes(30);
 
-            // If time was added during a pause in overtime, the logic is different
+            // Add 30 minutes to the remaining time, which could be negative (overtime).
+            _session.RemainingTimeOnPause += TimeSpan.FromMinutes(30);
+
+            // If the timer was in overtime, but now has positive time remaining, its state needs to change.
             if (_session.StatusBeforePause == TimerStatus.Finished)
             {
-                // The remaining time becomes 30 minutes minus the overtime that had accrued.
-                // E.g., if 5 minutes overtime, new remaining time is 25 minutes.
-                _session.RemainingTimeOnPause = TimeSpan.FromMinutes(30) - _session.RemainingTimeOnPause;
-
                 IsBlinkingAfterCall = false; // Stop the blinking
 
                 // Reset call flags
@@ -362,19 +352,23 @@ namespace MultiRoomTimer.ViewModels
                 OnPropertyChanged(nameof(EndCallStatusText));
                 CallCommand.RaiseCanExecuteChanged();
 
-                // The timer is no longer in "Finished" state. Determine the new state.
-                _session.StatusBeforePause = _session.RemainingTimeOnPause.TotalMinutes < 10 ? TimerStatus.Warning : TimerStatus.Running;
-            }
-            else // Timer was paused but not in overtime
-            {
-                // Simply add 30 minutes to the time that was remaining on pause.
-                _session.RemainingTimeOnPause = _session.RemainingTimeOnPause.Add(TimeSpan.FromMinutes(30));
+                // Determine the new state based on the updated remaining time.
+                if (_session.RemainingTimeOnPause.TotalSeconds > 0)
+                {
+                    _session.StatusBeforePause = _session.RemainingTimeOnPause.TotalMinutes < 10
+                        ? TimerStatus.Warning
+                        : TimerStatus.Running;
+                }
+                // If it's still negative, it remains in the Finished state upon resume.
             }
 
-            // Update display with the newly calculated remaining time
-            DisplayTime = _session.RemainingTimeOnPause;
+            // Update display with the newly calculated remaining time.
+            DisplayTime = _session.RemainingTimeOnPause > TimeSpan.Zero
+                ? _session.RemainingTimeOnPause
+                : TimeSpan.Zero;
             EstimatedEndTimeString = $"終了予定: {_session.EndTime:HH:mm}";
         }
+
 
         // --- Timer Logic ---
         private void Timer_Tick(object? sender, EventArgs e)

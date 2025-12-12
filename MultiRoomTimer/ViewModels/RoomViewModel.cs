@@ -208,6 +208,11 @@ namespace MultiRoomTimer.ViewModels
 
             if (!IsCourseSelectionEnabled)
             {
+                // Both Hour and Minute must have a value to be valid
+                if (string.IsNullOrWhiteSpace(ManualEndHourString) || string.IsNullOrWhiteSpace(ManualEndMinuteString))
+                {
+                    return false;
+                }
                 var manualTimeString = $"{ManualEndHourString}:{ManualEndMinuteString}";
                 return TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
             }
@@ -333,11 +338,16 @@ namespace MultiRoomTimer.ViewModels
         {
             if (!_session.EndTime.HasValue) return;
 
+            // First, always extend the final end time
             _session.EndTime = _session.EndTime.Value.AddMinutes(30);
 
-            // If time was added during a pause in overtime, reset the state
+            // If time was added during a pause in overtime, the logic is different
             if (_session.StatusBeforePause == TimerStatus.Finished)
             {
+                // The remaining time becomes 30 minutes minus the overtime that had accrued.
+                // E.g., if 5 minutes overtime, new remaining time is 25 minutes.
+                _session.RemainingTimeOnPause = TimeSpan.FromMinutes(30) - _session.RemainingTimeOnPause;
+
                 IsBlinkingAfterCall = false; // Stop the blinking
 
                 // Reset call flags
@@ -348,15 +358,16 @@ namespace MultiRoomTimer.ViewModels
                 OnPropertyChanged(nameof(EndCallStatusText));
                 CallCommand.RaiseCanExecuteChanged();
 
-                // When resumed, the timer should no longer be in the "Finished" (overtime) state.
-                // Determine the new state based on the updated remaining time.
-                var newRemainingTime = _session.EndTime.Value - DateTime.Now;
-                _session.StatusBeforePause = newRemainingTime.TotalMinutes < 10 ? TimerStatus.Warning : TimerStatus.Running;
+                // The timer is no longer in "Finished" state. Determine the new state.
+                _session.StatusBeforePause = _session.RemainingTimeOnPause.TotalMinutes < 10 ? TimerStatus.Warning : TimerStatus.Running;
+            }
+            else // Timer was paused but not in overtime
+            {
+                // Simply add 30 minutes to the time that was remaining on pause.
+                _session.RemainingTimeOnPause = _session.RemainingTimeOnPause.Add(TimeSpan.FromMinutes(30));
             }
 
-            // Recalculate remaining time and update display
-            var remaining = _session.EndTime.Value - DateTime.Now;
-            _session.RemainingTimeOnPause = remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
+            // Update display with the newly calculated remaining time
             DisplayTime = _session.RemainingTimeOnPause;
             EstimatedEndTimeString = $"終了予定: {_session.EndTime:HH:mm}";
         }

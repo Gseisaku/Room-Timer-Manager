@@ -18,7 +18,8 @@ namespace MultiRoomTimer.ViewModels
         private string _pauseButtonContent = "一時停止";
         private string _estimatedEndTimeString = "";
         private bool _isBlinkingAfterCall = false;
-        private string _manualEndTimeString = "";
+        private string _manualEndHourString = "";
+        private string _manualEndMinuteString = "";
 
         // --- Commands ---
         public RelayCommand StartCommand { get; }
@@ -79,14 +80,14 @@ namespace MultiRoomTimer.ViewModels
             }
         }
 
-        public string ManualEndTimeString
+        public string ManualEndHourString
         {
-            get => _manualEndTimeString;
+            get => _manualEndHourString;
             set
             {
-                if (_manualEndTimeString != value)
+                if (_manualEndHourString != value)
                 {
-                    _manualEndTimeString = value;
+                    _manualEndHourString = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(IsCourseSelectionEnabled));
                     StartCommand.RaiseCanExecuteChanged();
@@ -94,7 +95,23 @@ namespace MultiRoomTimer.ViewModels
             }
         }
 
-        public bool IsCourseSelectionEnabled => string.IsNullOrWhiteSpace(ManualEndTimeString);
+        public string ManualEndMinuteString
+        {
+            get => _manualEndMinuteString;
+            set
+            {
+                if (_manualEndMinuteString != value)
+                {
+                    _manualEndMinuteString = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsCourseSelectionEnabled));
+                    StartCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+
+        public bool IsCourseSelectionEnabled => string.IsNullOrWhiteSpace(ManualEndHourString) && string.IsNullOrWhiteSpace(ManualEndMinuteString);
 
         public TimeSpan DisplayTime
         {
@@ -189,9 +206,10 @@ namespace MultiRoomTimer.ViewModels
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(ManualEndTimeString))
+            if (!IsCourseSelectionEnabled)
             {
-                return TimeSpan.TryParseExact(ManualEndTimeString, new[] { "hh\\:mm", "HH\\:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
+                var manualTimeString = $"{ManualEndHourString}:{ManualEndMinuteString}";
+                return TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
             }
             else
             {
@@ -203,7 +221,8 @@ namespace MultiRoomTimer.ViewModels
             _session.Status = TimerStatus.Running;
             _session.StartTime = DateTime.Now;
 
-            if (!string.IsNullOrWhiteSpace(ManualEndTimeString) && TimeSpan.TryParseExact(ManualEndTimeString, new[] { "hh\\:mm", "HH\\:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out var manualTime))
+            var manualTimeString = $"{ManualEndHourString}:{ManualEndMinuteString}";
+            if (!IsCourseSelectionEnabled && TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out var manualTime))
             {
                 var now = DateTime.Now;
                 var startTimeWithSecondsReset = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
@@ -302,7 +321,8 @@ namespace MultiRoomTimer.ViewModels
             DisplayTime = TimeSpan.Zero;
             EstimatedEndTimeString = "";
             IsBlinkingAfterCall = false;
-            ManualEndTimeString = "";
+            ManualEndHourString = "";
+            ManualEndMinuteString = "";
             OnPropertyChanged(nameof(TenMinuteCallStatusText));
             OnPropertyChanged(nameof(EndCallStatusText));
             UpdateStatus();

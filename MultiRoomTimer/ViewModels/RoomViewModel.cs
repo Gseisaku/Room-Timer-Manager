@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 
 namespace MultiRoomTimer.ViewModels
 {
@@ -201,29 +202,48 @@ namespace MultiRoomTimer.ViewModels
 
         private bool CanStart(object? p)
         {
-            // Base conditions must always be met.
-            if (_session.Status != TimerStatus.Available || string.IsNullOrWhiteSpace(CastName) || !_session.Type.HasValue)
+            var logPath = "CanStartLog.txt";
+            try
             {
-                return false;
-            }
+                // Base conditions must always be met.
+                bool statusOk = _session.Status == TimerStatus.Available;
+                bool castNameOk = !string.IsNullOrWhiteSpace(CastName);
+                bool typeOk = _session.Type.HasValue;
+                bool baseConditionsMet = statusOk && castNameOk && typeOk;
 
-            // Determine the entry mode. If any manual time field has input, it's manual mode.
-            bool isManualMode = !string.IsNullOrWhiteSpace(ManualEndHourString) || !string.IsNullOrWhiteSpace(ManualEndMinuteString);
+                // Determine the entry mode.
+                bool isManualMode = !string.IsNullOrWhiteSpace(ManualEndHourString) || !string.IsNullOrWhiteSpace(ManualEndMinuteString);
 
-            if (isManualMode)
-            {
-                // In manual mode, both hour and minute must be filled and form a valid time.
-                if (string.IsNullOrWhiteSpace(ManualEndHourString) || string.IsNullOrWhiteSpace(ManualEndMinuteString))
+                bool finalResult;
+                string modeDetails;
+
+                if (isManualMode)
                 {
-                    return false; // Incomplete time
+                    bool hourOk = !string.IsNullOrWhiteSpace(ManualEndHourString);
+                    bool minuteOk = !string.IsNullOrWhiteSpace(ManualEndMinuteString);
+                    var manualTimeString = $"{ManualEndHourString}:{ManualEndMinuteString}";
+                    bool timeIsValid = TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
+
+                    finalResult = baseConditionsMet && hourOk && minuteOk && timeIsValid;
+                    modeDetails = $"Mode=Manual, Hour='{ManualEndHourString}'(Ok:{hourOk}), Minute='{ManualEndMinuteString}'(Ok:{minuteOk}), ParsedTimeOk:{timeIsValid}";
                 }
-                var manualTimeString = $"{ManualEndHourString}:{ManualEndMinuteString}";
-                return TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
+                else
+                {
+                    bool courseOk = _session.CourseMinutes > 0;
+                    finalResult = baseConditionsMet && courseOk;
+                    modeDetails = $"Mode=Course, SelectedCourse={_session.CourseMinutes}(Ok:{courseOk})";
+                }
+
+                // Log the state
+                string logMessage = $"[{DateTime.Now:HH:mm:ss.fff}] Room {RoomNumber}: CanStart={finalResult} | Base(StatusOk:{statusOk}, CastOk:{castNameOk}, TypeOk:{typeOk}) | {modeDetails}\n";
+                File.AppendAllText(logPath, logMessage);
+
+                return finalResult;
             }
-            else
+            catch (Exception ex)
             {
-                // In course mode, a course must be selected.
-                return _session.CourseMinutes > 0;
+                File.AppendAllText(logPath, $"[{DateTime.Now:HH:mm:ss.fff}] Room {RoomNumber}: EXCEPTION in CanStart: {ex.Message}\n");
+                return false;
             }
         }
         private void ExecuteStart(object? p)

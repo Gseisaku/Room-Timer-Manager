@@ -201,31 +201,29 @@ namespace MultiRoomTimer.ViewModels
 
         private bool CanStart(object? p)
         {
-            // These conditions are required for any start
-            if (_session.Status != TimerStatus.Available || string.IsNullOrWhiteSpace(CastName) || !_session.Type.HasValue)
+            // First, check the base conditions that are always required.
+            bool baseConditionsMet = _session.Status == TimerStatus.Available &&
+                                     !string.IsNullOrWhiteSpace(CastName) &&
+                                     _session.Type.HasValue;
+
+            if (!baseConditionsMet)
             {
                 return false;
             }
 
-            // If using manual time, all manual fields must be valid
+            // Next, determine if the conditions for starting with a course are met.
+            bool canStartWithCourse = IsCourseSelectionEnabled && _session.CourseMinutes > 0;
+
+            // Then, determine if the conditions for starting with a manual time are met.
+            bool canStartWithManualTime = false;
             if (!IsCourseSelectionEnabled)
             {
-                if (string.IsNullOrWhiteSpace(ManualEndHourString) || string.IsNullOrWhiteSpace(ManualEndMinuteString))
-                {
-                    return false;
-                }
                 var manualTimeString = $"{ManualEndHourString}:{ManualEndMinuteString}";
-                return TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
+                canStartWithManualTime = TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
             }
 
-            // If using course selection, a course must be selected
-            if (IsCourseSelectionEnabled)
-            {
-                return _session.CourseMinutes > 0;
-            }
-
-            // Default case if neither mode is clearly determined
-            return false;
+            // The start button can be enabled if either of the specific modes is valid.
+            return canStartWithCourse || canStartWithManualTime;
         }
         private void ExecuteStart(object? p)
         {

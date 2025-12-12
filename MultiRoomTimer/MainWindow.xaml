@@ -66,7 +66,33 @@
                             <!-- Room Number and Timer Display -->
                             <StackPanel Grid.Row="0" Grid.RowSpan="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,10,0,10">
                                 <TextBlock Text="{Binding RoomNumber, StringFormat={}{0}号室}" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0"/>
-                                <TextBlock Text="{Binding DisplayTimeString}" FontSize="32" FontWeight="Bold" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding DisplayTimeString}" FontSize="32" FontWeight="Bold" VerticalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsBlinkingAfterCall}" Value="True">
+                                                    <DataTrigger.EnterActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <ColorAnimation Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                                                              From="Black" To="Red" Duration="0:0:0.5"
+                                                                              AutoReverse="True" RepeatBehavior="Forever"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.EnterActions>
+                                                    <DataTrigger.ExitActions>
+                                                        <BeginStoryboard>
+                                                            <Storyboard>
+                                                                <ColorAnimation Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                                                              To="Black" Duration="0:0:0.1"/>
+                                                            </Storyboard>
+                                                        </BeginStoryboard>
+                                                    </DataTrigger.ExitActions>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                                 <TextBlock Text="{Binding EndTimeString, StringFormat={}( ~ {0})}" FontSize="20" VerticalAlignment="Bottom" Margin="10,0,0,3" Foreground="DarkSlateGray"/>
                             </StackPanel>
 
@@ -79,15 +105,25 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0">
-                                    <StackPanel Orientation="Horizontal" Margin="5,0">
-                                        <TextBlock Text="キャスト: " VerticalAlignment="Center"/>
-                                        <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="120" IsEnabled="{Binding IsAvailable}"/>
-                                    </StackPanel>
+                                    <WrapPanel Margin="5,0">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="キャスト: " VerticalAlignment="Center"/>
+                                            <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="80" IsEnabled="{Binding IsAvailable}"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                                            <TextBlock Text="10分前Call: " VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding TenMinuteCallStatusText}" VerticalAlignment="Center" FontWeight="Bold"/>
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                                            <TextBlock Text="終了Call: " VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding EndCallStatusText}" VerticalAlignment="Center" FontWeight="Bold"/>
+                                        </StackPanel>
+                                    </WrapPanel>
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="1">
                                     <TextBlock Text="コース (分):" Margin="5,5,5,0"/>
-                                    <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
+                                    <WrapPanel Margin="5,0" IsEnabled="{Binding IsCourseSelectionEnabled}">
                                         <RadioButton Content="45" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=45, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                         <RadioButton Content="60" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=60, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                         <RadioButton Content="70" IsChecked="{Binding SelectedCourse, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=70, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Course{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
@@ -98,21 +134,25 @@
 
                                 <StackPanel Grid.Row="2">
                                     <TextBlock Text="指名:" Margin="5,5,5,0"/>
-                                    <WrapPanel Margin="5,0" IsEnabled="{Binding IsAvailable}">
-                                        <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                        <RadioButton Content="H" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                        <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                    </WrapPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="5,0">
+                                        <WrapPanel IsEnabled="{Binding IsAvailable}">
+                                            <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                            <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                            <RadioButton Content="本指" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        </WrapPanel>
+                                        <TextBox Text="{Binding ManualEndTimeString, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Margin="5,0"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Grid>
 
                             <!-- Buttons -->
                             <WrapPanel Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="5">
-                                <Button Content="開始" Command="{Binding StartCommand}" Margin="2" Padding="8,3"/>
-                                <Button Content="{Binding PauseButtonContent}" Command="{Binding TogglePauseCommand}" Margin="2" Padding="8,3"/>
-                                <Button Content="+30" Command="{Binding AddTimeCommand}" Margin="2" Padding="8,3"/>
-                                <Button Content="終了" Command="{Binding EndCommand}" Margin="2" Padding="8,3" Background="IndianRed" Foreground="White"/>
-                                <Button Content="消去" Command="{Binding ResetCommand}" Margin="2" Padding="8,3"/>
+                                <Button Content="開始" Command="{Binding StartCommand}" Margin="2" Padding="12,5" FontSize="16"/>
+                                <Button Content="Call" Command="{Binding CallCommand}" Margin="2" Padding="8,3" FontSize="12"/>
+                                <Button Content="{Binding PauseButtonContent}" Command="{Binding TogglePauseCommand}" Margin="2" Padding="8,3" FontSize="12"/>
+                                <Button Content="+30" Command="{Binding AddTimeCommand}" Margin="2" Padding="8,3" FontSize="12"/>
+                                <Button Content="終了" Command="{Binding EndCommand}" Margin="2" Padding="8,3" Background="IndianRed" Foreground="White" FontSize="12"/>
+                                <Button Content="消去" Command="{Binding ResetCommand}" Margin="2" Padding="8,3" FontSize="12"/>
                             </WrapPanel>
                         </Grid>
                     </Border>

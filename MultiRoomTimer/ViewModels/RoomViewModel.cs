@@ -201,14 +201,15 @@ namespace MultiRoomTimer.ViewModels
 
         private bool CanStart(object? p)
         {
+            // These conditions are required for any start
             if (_session.Status != TimerStatus.Available || string.IsNullOrWhiteSpace(CastName) || !_session.Type.HasValue)
             {
                 return false;
             }
 
+            // If using manual time, all manual fields must be valid
             if (!IsCourseSelectionEnabled)
             {
-                // Both Hour and Minute must have a value to be valid
                 if (string.IsNullOrWhiteSpace(ManualEndHourString) || string.IsNullOrWhiteSpace(ManualEndMinuteString))
                 {
                     return false;
@@ -216,10 +217,15 @@ namespace MultiRoomTimer.ViewModels
                 var manualTimeString = $"{ManualEndHourString}:{ManualEndMinuteString}";
                 return TimeSpan.TryParseExact(manualTimeString, new[] { "H:m", "H:mm", "HH:m", "HH:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out _);
             }
-            else
+
+            // If using course selection, a course must be selected
+            if (IsCourseSelectionEnabled)
             {
                 return _session.CourseMinutes > 0;
             }
+
+            // Default case if neither mode is clearly determined
+            return false;
         }
         private void ExecuteStart(object? p)
         {

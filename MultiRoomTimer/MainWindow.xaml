@@ -132,17 +132,31 @@
                                     </WrapPanel>
                                 </StackPanel>
 
-                                <StackPanel Grid.Row="2">
-                                    <TextBlock Text="指名:" Margin="5,5,5,0"/>
-                                    <StackPanel Orientation="Horizontal" Margin="5,0">
-                                        <WrapPanel IsEnabled="{Binding IsAvailable}">
-                                            <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                            <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                            <RadioButton Content="本指" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
-                                        </WrapPanel>
-                                        <TextBox Text="{Binding ManualEndTimeString, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Margin="5,0"/>
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="指名:" Margin="5,5,5,0"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="終了時間（手動入力用）：" Margin="5,5,5,0"/>
+
+                                    <WrapPanel Grid.Row="1" Grid.Column="0" IsEnabled="{Binding IsAvailable}" Margin="5,0" VerticalAlignment="Center">
+                                        <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                        <RadioButton Content="本指" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
+                                    </WrapPanel>
+
+                                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                                        <TextBox Text="{Binding ManualEndHourString, UpdateSourceTrigger=PropertyChanged}" MinWidth="30" Margin="5,0,0,0" TextAlignment="Center" IsEnabled="{Binding IsAvailable}"/>
+                                        <TextBlock Text=":" VerticalAlignment="Center" Margin="2,0"/>
+                                        <TextBox Text="{Binding ManualEndMinuteString, UpdateSourceTrigger=PropertyChanged}" MinWidth="30" Margin="0,0,5,0" TextAlignment="Center" IsEnabled="{Binding IsAvailable}"/>
                                     </StackPanel>
-                                </StackPanel>
+                                </Grid>
                             </Grid>
 
                             <!-- Buttons -->

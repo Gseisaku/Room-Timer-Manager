@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 
 namespace MultiRoomTimer.ViewModels
 {
@@ -84,9 +85,15 @@ namespace MultiRoomTimer.ViewModels
             get => _manualEndTimeString;
             set
             {
-                if (_manualEndTimeString != value)
+                var formattedValue = value;
+                if (formattedValue != null && formattedValue.Length == 4 && formattedValue.All(char.IsDigit))
                 {
-                    _manualEndTimeString = value;
+                    formattedValue = $"{formattedValue.Substring(0, 2)}:{formattedValue.Substring(2, 2)}";
+                }
+
+                if (_manualEndTimeString != formattedValue)
+                {
+                    _manualEndTimeString = formattedValue;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(IsCourseSelectionEnabled));
                     StartCommand.RaiseCanExecuteChanged();

@@ -151,7 +151,7 @@
                                         <RadioButton Content="本指" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                     </WrapPanel>
 
-                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ManualEndTimeString, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Margin="5,0" IsEnabled="{Binding IsAvailable}"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ManualEndTimeString, UpdateSourceTrigger=PropertyChanged}" Width="60" HorizontalAlignment="Left" Margin="5,0" IsEnabled="{Binding IsAvailable}"/>
                                 </Grid>
                             </Grid>
 

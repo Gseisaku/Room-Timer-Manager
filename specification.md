@@ -43,7 +43,7 @@ Input is possible only when the timer is in the available state.
 - **Course (min):** Radio buttons to select the session duration (45, 60, 70, 90, 120 minutes).
 - **Type:** Radio buttons to select the session type (F, H, N).
 - **End Time (for manual input):**
-    - A text box for manually specifying the end time. A label "終了時間（手動入力用）：" is displayed above it.
+    - A text box for manually specifying the end time. A label "終了時刻（手動入力 HH:MM）：" is displayed above it.
     - When a manual end time is entered, the "Course (min)" selection is disabled.
     - The input field has a fixed width to match the size of the "Type" radio buttons.
     - **Auto-formatting:** If a 4-digit number (e.g., "1330") is entered, it is automatically converted to a time format (e.g., "13:30").
@@ -53,7 +53,7 @@ Input is possible only when the timer is in the available state.
 - **Start:** Starts the timer. Can be pressed when "Cast" and "Type" are entered/selected, and either "Course" is selected or a valid "Manual End Time" is entered.
 - **Pause / Resume:** Toggles between pausing and resuming the timer.
 - **+30:** Extends the remaining time by 30 minutes while the timer is **paused**.
-- **End:** Stops the timer, saves the session data, and returns the room to the available state.
+- **End:** Stops the timer, saves the session data, and returns the room to the available state. Can be pressed when both "10 minute Call" and "End Call" are marked as "済", or when the timer is **Paused**. A confirmation dialog will be displayed if pressed during a pause.
 - **Reset:** Stops the timer without saving the session data, clears all inputs, and returns to the available state. Can be pressed when the timer is **Available** (before starting) or **Paused**.
 
 ## 3. Data Storage Function

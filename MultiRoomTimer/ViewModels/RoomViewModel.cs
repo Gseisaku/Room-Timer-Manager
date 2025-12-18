@@ -4,6 +4,7 @@ using System;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Windows.Media;
+using System.Windows;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -273,9 +274,18 @@ namespace MultiRoomTimer.ViewModels
             UpdateStatus();
         }
 
-        private bool CanEnd(object? p) => _session.Status != TimerStatus.Available;
+        private bool CanEnd(object? p) => (_session.TenMinuteCallMade && _session.EndCallMade) || _session.Status == TimerStatus.Paused;
         private void ExecuteEnd(object? p)
         {
+            if (_session.Status == TimerStatus.Paused)
+            {
+                var result = MessageBox.Show("本当に終了しますか？", "確認", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.No)
+                {
+                    return; // Abort the operation
+                }
+            }
+
             _timer.Stop();
             if (_session.Status != TimerStatus.Finished)
             {

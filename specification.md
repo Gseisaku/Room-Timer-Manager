@@ -53,7 +53,7 @@ Input is possible only when the timer is in the available state.
 - **Start:** Starts the timer. Can be pressed when "Cast" and "Type" are entered/selected, and either "Course" is selected or a valid "Manual End Time" is entered.
 - **Pause / Resume:** Toggles between pausing and resuming the timer.
 - **+30:** Extends the remaining time by 30 minutes while the timer is **paused**.
-- **End:** Stops the timer, saves the session data, and returns the room to the available state. Can be pressed when both "10 minute Call" and "End Call" are marked as "済", or when the timer is **Paused**. A confirmation dialog will be displayed if pressed during a pause.
+- **End:** Stops the timer, saves the session data, and returns the room to the available state. Can be pressed when both "10 minute Call" and "End Call" are marked as "済", or when the timer is **Paused**. A confirmation dialog will be displayed if pressed during a pause **unless both calls have been completed**.
 - **Reset:** Stops the timer without saving the session data, clears all inputs, and returns to the available state. Can be pressed when the timer is **Available** (before starting) or **Paused**.
 
 ## 3. Data Storage Function

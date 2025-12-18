@@ -143,7 +143,7 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="指名:" Margin="5,5,5,0"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="終了時間（手動入力用）：" Margin="5,5,5,0"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="終了時刻（手動入力 HH:MM）：" Margin="5,5,5,0"/>
 
                                     <WrapPanel Grid.Row="1" Grid.Column="0" IsEnabled="{Binding IsAvailable}" Margin="5,0" VerticalAlignment="Center">
                                         <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>

@@ -132,27 +132,17 @@
                                     </WrapPanel>
                                 </StackPanel>
 
-                                <Grid Grid.Row="2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="指名:" Margin="5,5,5,0"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="終了時刻（手動入力 HH:MM）：" Margin="5,5,5,0"/>
-
-                                    <WrapPanel Grid.Row="1" Grid.Column="0" IsEnabled="{Binding IsAvailable}" Margin="5,0" VerticalAlignment="Center">
+                                <WrapPanel Grid.Row="2" Margin="5,5,5,0" VerticalAlignment="Center">
+                                    <TextBlock Text="指名:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                    <WrapPanel IsEnabled="{Binding IsAvailable}" VerticalAlignment="Center">
                                         <RadioButton Content="F" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=F, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                         <RadioButton Content="N" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=N, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                         <RadioButton Content="本指" IsChecked="{Binding SelectedType, Converter={StaticResource RadioButtonValueConverter}, ConverterParameter=H, Mode=TwoWay}" GroupName="{Binding RoomNumber, StringFormat='Type{0}'}" Style="{StaticResource TabRadioButtonStyle}"/>
                                     </WrapPanel>
 
-                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ManualEndTimeString, UpdateSourceTrigger=PropertyChanged}" Width="60" HorizontalAlignment="Left" Margin="5,0" IsEnabled="{Binding IsAvailable}"/>
-                                </Grid>
+                                    <TextBlock Text="終了時刻（手動入力 HH:MM）：" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                                    <TextBox Text="{Binding ManualEndTimeString, UpdateSourceTrigger=LostFocus}" Width="60" HorizontalAlignment="Left" IsEnabled="{Binding IsAvailable}"/>
+                                </WrapPanel>
                             </Grid>
 
                             <!-- Buttons -->

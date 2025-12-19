@@ -88,7 +88,7 @@ Input is possible only when the timer is in the available state.
 | 4   | Course (min)   | The selected course duration (in minutes).                           |
 | 5   | Type           | The selected session type (F, H, N).                                 |
 | 6   | Start Time     | The session start time (`HH:mm:ss`).                                 |
-| 7   | End Time       | The actual end time when the "End" button was pressed (`HH:mm:ss`).  |
-| 8   | Sched EndTime  | The originally scheduled end time (`HH:mm:ss`).                      |
+| 7   | End Time       | The actual time when the "End" button was pressed (`HH:mm:ss`).      |
+| 8   | Sched EndTime  | The originally scheduled end time, based on the selected course or manual input (`HH:mm:ss`). |
 | 9   | Overtime       | The time exceeded beyond the scheduled time (`hh:mm:ss`). Blank if no overtime. |
 | 10  | Remarks        | A blank column for manual remarks.                                   |

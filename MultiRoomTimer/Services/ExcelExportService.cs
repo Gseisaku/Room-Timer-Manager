@@ -53,8 +53,6 @@ namespace MultiRoomTimer.Services
 
         private void WriteSessionRow(IXLWorksheet worksheet, int row, RoomSession session, int seq)
         {
-            var scheduledEndTime = session.StartTime?.AddMinutes(session.CourseMinutes);
-
             worksheet.Cell(row, 1).Value = seq;
             worksheet.Cell(row, 2).Value = session.RoomNumber;
             worksheet.Cell(row, 3).Value = session.CastName;
@@ -62,7 +60,7 @@ namespace MultiRoomTimer.Services
             worksheet.Cell(row, 5).Value = session.Type?.ToString();
             worksheet.Cell(row, 6).Value = session.StartTime?.ToString("HH:mm:ss");
             worksheet.Cell(row, 7).Value = session.EndTime?.ToString("HH:mm:ss");
-            worksheet.Cell(row, 8).Value = scheduledEndTime?.ToString("HH:mm:ss");
+            worksheet.Cell(row, 8).Value = session.ScheduledEndTime?.ToString("HH:mm:ss");
             worksheet.Cell(row, 9).Value = session.Overtime.TotalSeconds > 0 ? session.Overtime.ToString(@"hh\:mm\:ss") : "";
             worksheet.Cell(row, 10).Value = ""; // Remarks
         }

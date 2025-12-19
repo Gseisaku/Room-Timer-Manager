@@ -249,6 +249,7 @@ namespace MultiRoomTimer.ViewModels
             _session.Status = TimerStatus.Running;
             _session.StartTime = startTime;
             _session.EndTime = endTime;
+            _session.ScheduledEndTime = endTime;
 
             EstimatedEndTimeString = $"終了予定: {_session.EndTime:HH:mm}";
             _timer.Start();
@@ -307,9 +308,10 @@ namespace MultiRoomTimer.ViewModels
             }
 
             _timer.Stop();
+            var actualEndTime = DateTime.Now;
             if (_session.Status != TimerStatus.Finished)
             {
-                 _session.EndTime = DateTime.Now;
+                 _session.EndTime = actualEndTime;
             }
 
             var sessionSnapshot = new RoomSession(_session.RoomNumber) {
@@ -317,8 +319,8 @@ namespace MultiRoomTimer.ViewModels
                 CourseMinutes = _session.CourseMinutes,
                 Type = _session.Type,
                 StartTime = _session.StartTime,
-                EndTime = _session.EndTime,
-                ScheduledEndTime = _session.StartTime?.AddMinutes(_session.CourseMinutes),
+                EndTime = actualEndTime,
+                ScheduledEndTime = _session.ScheduledEndTime,
                 Overtime = _session.Overtime
             };
             SessionEnded?.Invoke(sessionSnapshot);

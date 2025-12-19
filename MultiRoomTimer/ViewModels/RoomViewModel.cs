@@ -309,6 +309,15 @@ namespace MultiRoomTimer.ViewModels
         private bool CanReset(object? p) => _session.Status == TimerStatus.Available || _session.Status == TimerStatus.Paused;
         private void ExecuteReset(object? p)
         {
+            if (_session.Status == TimerStatus.Paused)
+            {
+                var result = MessageBox.Show("本当に消去しますか？", "確認", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.No)
+                {
+                    return; // Abort the operation
+                }
+            }
+
             _timer.Stop();
             ResetState();
         }

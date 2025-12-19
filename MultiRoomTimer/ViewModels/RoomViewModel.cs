@@ -87,9 +87,17 @@ namespace MultiRoomTimer.ViewModels
             set
             {
                 var formattedValue = value;
-                if (formattedValue != null && formattedValue.Length == 4 && formattedValue.All(char.IsDigit))
+                if (formattedValue != null && formattedValue.All(char.IsDigit))
                 {
-                    formattedValue = $"{formattedValue.Substring(0, 2)}:{formattedValue.Substring(2, 2)}";
+                    if (formattedValue.Length == 3)
+                    {
+                        formattedValue = "0" + formattedValue;
+                    }
+
+                    if (formattedValue.Length == 4)
+                    {
+                        formattedValue = $"{formattedValue.Substring(0, 2)}:{formattedValue.Substring(2, 2)}";
+                    }
                 }
 
                 if (_manualEndTimeString != formattedValue)

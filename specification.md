@@ -52,7 +52,7 @@ Input is possible only when the timer is in the available state.
     - A text box for manually specifying the end time. A label "終了時刻（手動入力 HH:MM）：" is displayed above it.
     - When a manual end time is entered, the "Course (min)" selection is disabled.
     - The input field has a fixed width to match the size of the "Type" radio buttons.
-    - **Auto-formatting:** If a 4-digit number (e.g., "1330") is entered, it is automatically converted to a time format (e.g., "13:30").
+    - **Auto-formatting:** If a 4-digit number (e.g., "1330") is entered, it is automatically converted to a time format (e.g., "13:30"). If a 3-digit number is entered (e.g., "930"), it is zero-padded to "0930" and then converted to "09:30".
 
 #### 2.2.3. Operation Buttons
 

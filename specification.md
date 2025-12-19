@@ -7,6 +7,12 @@ This application is a system for simultaneously managing timers for multiple roo
 - **Application Name:** Multi-Room Timer Management System
 - **Version:** Ver.3.1
 
+### 1.1. System Requirements
+
+- **OS:** Windows 10 / 11
+- **Application Type:** Desktop Application
+- **Required Applications:** None. The application is a self-contained executable and does not require any pre-installed software like the .NET 6 Runtime.
+
 ## 2. Main Features
 
 ### 2.1. Main Screen

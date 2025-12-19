@@ -49,10 +49,11 @@ Input is possible only when the timer is in the available state.
 - **Course (min):** Radio buttons to select the session duration (45, 60, 70, 90, 120 minutes).
 - **Type:** Radio buttons to select the session type (F, H, N).
 - **End Time (for manual input):**
-    - A text box for manually specifying the end time. A label "終了時刻（手動入力 HH:MM）：" is displayed above it.
+    - A text box for manually specifying the end time. The label "終了時刻（手動入力 HH:MM）：" is displayed on the same line as the "指名：" (Type) selector.
     - When a manual end time is entered, the "Course (min)" selection is disabled.
+    - **Validation:** When the "Start" button is pressed, the system checks if the entered time is in the past. If it is, an error message ("過去の時刻が入力されています") is displayed, and the timer does not start.
     - The input field has a fixed width to match the size of the "Type" radio buttons.
-    - **Auto-formatting:** If a 4-digit number (e.g., "1330") is entered, it is automatically converted to a time format (e.g., "13:30"). If a 3-digit number is entered (e.g., "930"), it is zero-padded to "0930" and then converted to "09:30".
+    - **Auto-formatting:** When the input field loses focus, if a 4-digit number (e.g., "1330") was entered, it is automatically converted to a time format (e.g., "13:30"). If a 3-digit number was entered (e.g., "930"), it is zero-padded to "0930" and then converted to "09:30".
 
 #### 2.2.3. Operation Buttons
 

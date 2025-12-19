@@ -216,27 +216,39 @@ namespace MultiRoomTimer.ViewModels
         }
         private void ExecuteStart(object? p)
         {
-            _session.Status = TimerStatus.Running;
-            _session.StartTime = DateTime.Now;
+            DateTime startTime = DateTime.Now;
+            DateTime endTime;
 
-            if (!string.IsNullOrWhiteSpace(ManualEndTimeString) && TimeSpan.TryParseExact(ManualEndTimeString, new[] { "hh\\:mm", "HH\\:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out var manualTime))
+            // Handle manual time input mode
+            if (!string.IsNullOrWhiteSpace(ManualEndTimeString))
             {
-                var now = DateTime.Now;
-                var startTimeWithSecondsReset = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
-                var manualEndTime = now.Date + manualTime;
-
-                if (manualEndTime < startTimeWithSecondsReset)
+                if (TimeSpan.TryParseExact(ManualEndTimeString, new[] { "hh\\:mm", "HH\\:mm" }, CultureInfo.InvariantCulture, TimeSpanStyles.None, out var manualTime))
                 {
-                    manualEndTime = manualEndTime.AddDays(1);
-                }
+                    endTime = startTime.Date + manualTime;
 
-                var duration = manualEndTime - startTimeWithSecondsReset;
-                _session.EndTime = now.Add(duration);
+                    // If the calculated end time is in the past, show an error and abort.
+                    if (endTime < startTime)
+                    {
+                        MessageBox.Show("過去の時刻が入力されています", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                }
+                else
+                {
+                    // This case should not be reached if CanStart is working correctly, but it is a good safeguard.
+                    return;
+                }
             }
+            // Handle course selection mode
             else
             {
-                _session.EndTime = _session.StartTime.Value.AddMinutes(_session.CourseMinutes);
+                endTime = startTime.AddMinutes(_session.CourseMinutes);
             }
+
+            // Set session properties and start the timer
+            _session.Status = TimerStatus.Running;
+            _session.StartTime = startTime;
+            _session.EndTime = endTime;
 
             EstimatedEndTimeString = $"終了予定: {_session.EndTime:HH:mm}";
             _timer.Start();

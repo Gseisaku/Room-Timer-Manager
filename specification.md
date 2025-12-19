@@ -7,6 +7,12 @@ This application is a system for simultaneously managing timers for multiple roo
 - **Application Name:** Multi-Room Timer Management System
 - **Version:** Ver.3.1
 
+### 1.1. System Requirements
+
+- **OS:** Windows 10 / 11
+- **Application Type:** Desktop Application
+- **Required Applications:** None. The application is a self-contained executable and does not require any pre-installed software like the .NET 6 Runtime.
+
 ## 2. Main Features
 
 ### 2.1. Main Screen
@@ -46,7 +52,7 @@ Input is possible only when the timer is in the available state.
     - A text box for manually specifying the end time. A label "終了時刻（手動入力 HH:MM）：" is displayed above it.
     - When a manual end time is entered, the "Course (min)" selection is disabled.
     - The input field has a fixed width to match the size of the "Type" radio buttons.
-    - **Auto-formatting:** If a 4-digit number (e.g., "1330") is entered, it is automatically converted to a time format (e.g., "13:30").
+    - **Auto-formatting:** If a 4-digit number (e.g., "1330") is entered, it is automatically converted to a time format (e.g., "13:30"). If a 3-digit number is entered (e.g., "930"), it is zero-padded to "0930" and then converted to "09:30".
 
 #### 2.2.3. Operation Buttons
 

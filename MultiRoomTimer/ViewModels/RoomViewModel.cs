@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using System.Windows.Media;
 using System.Windows;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 
@@ -50,6 +51,8 @@ namespace MultiRoomTimer.ViewModels
                 }
             }
         }
+
+        public ObservableCollection<string> CastNames { get; }
 
         public List<int> CourseOptions { get; } = new List<int> { 45, 60, 70, 90, 120 };
         public int SelectedCourse
@@ -159,9 +162,10 @@ namespace MultiRoomTimer.ViewModels
         }
 
         // --- Constructor ---
-        public RoomViewModel(RoomSession session)
+        public RoomViewModel(RoomSession session, ObservableCollection<string> castNames)
         {
             _session = session;
+            CastNames = castNames;
             _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             _timer.Tick += Timer_Tick;
 

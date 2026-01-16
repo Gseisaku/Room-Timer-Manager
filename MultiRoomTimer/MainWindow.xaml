@@ -108,7 +108,7 @@
                                     <WrapPanel Margin="5,0">
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="キャスト: " VerticalAlignment="Center"/>
-                                            <TextBox Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" MinWidth="80" IsEnabled="{Binding IsAvailable}"/>
+                                            <ComboBox ItemsSource="{Binding CastNames}" Text="{Binding CastName, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" MinWidth="100" IsEnabled="{Binding IsAvailable}"/>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
                                             <TextBlock Text="10分前Call: " VerticalAlignment="Center"/>

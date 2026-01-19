@@ -52,6 +52,16 @@
 
 この `MultiRoomTimer.exe` ファイルを他のWindows PCにコピーすれば、ダブルクリックだけでアプリケーションを起動できます。
 
+### キャスト一覧取得ツール (GetCastSchedule.exe) の作成方法
+
+本アプリで使用するキャスト一覧を更新するためのツールも同様の手順でビルドできます。
+
+1.  プロジェクトルートにある `publish_GetCastSchedule.bat` をダブルクリックして実行します。
+2.  以下のパスに実行ファイルが生成されます。
+    `GetCastSchedule\bin\Release\net6.0\win-x64\publish\GetCastSchedule.exe`
+
+生成された `GetCastSchedule.exe` は、.NETランタイムがインストールされていない他のWindows PCでも単独で動作します。
+
 ## 開発技術
 - C#
 - WPF (.NET 6)

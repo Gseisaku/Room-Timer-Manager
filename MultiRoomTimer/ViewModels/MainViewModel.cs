@@ -20,18 +20,22 @@ namespace MultiRoomTimer.ViewModels
         private readonly JsonDataStorageService _jsonDataStorageService;
         private readonly ExcelExportService _excelExportService;
         private readonly CastListService _castListService;
+        private readonly ConfigurationService _configurationService;
 
         public MainViewModel()
         {
             _jsonDataStorageService = new JsonDataStorageService();
             _excelExportService = new ExcelExportService();
             _castListService = new CastListService();
+            _configurationService = new ConfigurationService();
+
+            var config = _configurationService.LoadConfig();
 
             var castList = _castListService.LoadCastList();
             CastNames = new ObservableCollection<string>(castList);
 
             Rooms = new ObservableCollection<RoomViewModel>();
-            for (int i = 1; i <= 19; i++)
+            for (int i = 1; i <= config.RoomCount; i++)
             {
                 var roomVM = new RoomViewModel(new RoomSession(i), CastNames);
                 roomVM.SessionEnded += OnSessionEnded;

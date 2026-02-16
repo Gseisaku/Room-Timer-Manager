@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using MultiRoomTimer.Services;
 
 namespace MultiRoomTimer
 {
@@ -23,18 +24,21 @@ namespace MultiRoomTimer
                 string getCastScheduleExe = Path.Combine(baseDir, "GetCastSchedule", "GetCastSchedule.exe");
                 string castListPath = Path.Combine(baseDir, "GetCastSchedule", "CastSchedule", "cast_list.txt");
 
+                var configService = new ConfigurationService();
+                var config = configService.LoadConfig();
+
                 if (File.Exists(castListPath))
                 {
                     var result = MessageBox.Show("既存のキャスト出勤データを上書きしますか？", "確認", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     if (result == MessageBoxResult.Yes)
                     {
-                        RunGetCastSchedule(getCastScheduleExe);
+                        RunGetCastSchedule(getCastScheduleExe, config.CastDataUrl);
                     }
                 }
                 else
                 {
                     MessageBox.Show("本日のキャスト出勤データを作成します", "通知", MessageBoxButton.OK, MessageBoxImage.Information);
-                    RunGetCastSchedule(getCastScheduleExe);
+                    RunGetCastSchedule(getCastScheduleExe, config.CastDataUrl);
                 }
             }
             catch (Exception ex)
@@ -45,7 +49,7 @@ namespace MultiRoomTimer
             base.OnStartup(e);
         }
 
-        private void RunGetCastSchedule(string exePath)
+        private void RunGetCastSchedule(string exePath, string castDataUrl)
         {
             if (!File.Exists(exePath))
             {
@@ -58,6 +62,7 @@ namespace MultiRoomTimer
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = exePath,
+                    Arguments = $"\"{castDataUrl}\"",
                     WorkingDirectory = Path.GetDirectoryName(exePath),
                     UseShellExecute = false,
                     CreateNoWindow = true // Console window will not be shown

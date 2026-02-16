@@ -12,6 +12,11 @@ namespace GetCastSchedule
         static async Task Main(string[] args)
         {
             string url = "https://www.oideyasukyoto2.com/cast/schedule-json/";
+            if (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0]))
+            {
+                url = args[0];
+            }
+
             string baseDir = AppDomain.CurrentDomain.BaseDirectory;
             string targetDir = Path.Combine(baseDir, "CastSchedule");
             string filePath = Path.Combine(targetDir, "cast_list.txt");

@@ -16,6 +16,7 @@ namespace MultiRoomTimer.ViewModels
         public ObservableCollection<string> CastNames { get; }
         public ICommand GenerateReportCommand { get; }
         public string AppVersion => "Ver.3.1.9";
+        public string WindowTitle { get; }
 
         private readonly JsonDataStorageService _jsonDataStorageService;
         private readonly ExcelExportService _excelExportService;
@@ -30,6 +31,10 @@ namespace MultiRoomTimer.ViewModels
             _configurationService = new ConfigurationService();
 
             var config = _configurationService.LoadConfig();
+
+            WindowTitle = string.IsNullOrWhiteSpace(config.ShopName)
+                ? "マルチルームタイマー管理システム"
+                : $"{config.ShopName}　マルチルームタイマー管理システム";
 
             var castList = _castListService.LoadCastList();
             CastNames = new ObservableCollection<string>(castList);
